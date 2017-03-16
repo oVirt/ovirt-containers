@@ -22,7 +22,7 @@ EXPOSE 8080 8443
 
 USER root
 
-RUN yum -y localinstall http://resources.ovirt.org/pub/yum-repo/ovirt-release41.rpm \
+RUN yum -y localinstall http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm \
     && yum -y install ovirt-engine patch \
     && yum -y clean all
 

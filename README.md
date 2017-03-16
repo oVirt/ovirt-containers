@@ -1,4 +1,4 @@
-# oVirt-Containers 4.1
+# oVirt-Containers - master snapshot
 The repository includes CI to build images and run manifests definitions of ovirt components over openshift environment
 
 # Details
