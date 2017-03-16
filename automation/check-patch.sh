@@ -1,0 +1,1 @@
+./automation/build-artifacts.sh
