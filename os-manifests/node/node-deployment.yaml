@@ -11,6 +11,7 @@ spec:
     spec:
       restartPolicy: "Always"
       hostIPC: true
+      serviceAccountName: privilegeduser
       containers:
         - image: docker.io/bronhaim/vdsm-kube-logger:latest
           name: vdsm-kube-logger
