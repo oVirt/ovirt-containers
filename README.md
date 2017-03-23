@@ -1,12 +1,13 @@
 # oVirt-Containers 4.1
-The repository includes images descriptions and manifests definitions of ovirt
-components for openshift deployment.
+The repository includes image-specifications (for docker currently) and yaml
+manifests for openshift to run oVirt deployment (oVirt-Engine and oVirt-Node).
 
-## MUST HAVE
+## Pre-requisites
 Must use oc tool version 1.5.0 - https://github.com/openshift/origin/releases
 
-WARNING: origin-clients rpm installation adds to /bin oc binary that might
-be older - verify that you work with 1.5 by "oc version"
+| WARNING |
+| ---- |
+| origin-clients rpm installation adds to /bin oc binary that might be older - verify that you work with 1.5 by "oc version" |
 
 ## Getting openshift environment
 There are two options - running a cluster of openshift locally or using
