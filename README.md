@@ -8,16 +8,12 @@ Must use oc tool version 1.5.0 - https://github.com/openshift/origin/releases
 WARNING: origin-clients rpm installation adds to /bin oc binary that might
 be older - verify that you work with 1.5 by "oc version"
 
-## Details
-The orchestration includes engine deploymentconfig and kube-vdsm deamonset.
-* For building images run "/bin/sh automation/build-artifacts.sh"
-* To load deployment to openshift run "oc create -f os-manifests -R"
-(for setting openshift cluster follow
-https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
-or https://github.com/minishift/minishift/blob/master/README.md#installation
-to set up a testing instance on minishift).
-
-## Orchestration using Minishift
+## Getting openshift environment
+There are two options - running a cluster of openshift locally or using
+Minishift VM:
+### Orchestration using Minishift
+Minisift is a VM running openshift cluster in it. This mostly being used for
+testing for easy and quicker deployment without changing local environemnt
 - Install minishift - https://github.com/minishift/minishift
 - Run the following
 
@@ -30,7 +26,10 @@ export MINISHIFT_CENTOS_ISO=${LATEST_MINISHIFT_CENTOS_ISO_BASE/tag/download}/min
 minishift start --memory 4096 --iso-url=$MINISHIFT_CENTOS_ISO --openshift-version=$OCTAG
 export PATH=$PATH:~/.minishift/cache/oc/$OCTAG
 ```
+### Orchestration using 'oc cluster up'
+Just follow https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
 
+## Load oVirt to openshift instructions
 ### Login to openshift as system admin
 ```
 oc login -u system:admin
@@ -86,7 +85,6 @@ oc set env dc/ovirt-engine -c ovirt-engine OVIRT_FQDN=$(oc describe routes ovirt
 oc patch dc/ovirt-engine --patch '{"spec":{"paused": false}}'
 ```
 
-### Provide login info
-```
-echo "Now you can login as developer user to the $PROJECT project, the server is accessible via web console at $(minishift console --url)"
-```
+Now you should be able to login as developer user (developer:admin) to the
+$PROJECT project, the server is accessible via web console at
+$(minishift console --url)" or locally at https://localhost:8443.
