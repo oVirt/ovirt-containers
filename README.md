@@ -75,15 +75,17 @@ oc create -f os-manifests/engine -R
 oc create -f os-manifests/node -R
 ```
 
-### Change the hostname for the ovirt-engine deployment
+### Change the hostname for the deployments
 According to the hostname that was assigned to the associated route
 ```
 oc set env dc/ovirt-engine -c ovirt-engine OVIRT_FQDN=$(oc describe routes ovirt-engine | grep "Requested Host:" | cut -d: -f2 | xargs)
+oc set env ds/vdsm-kube-ds -c vdsm-kube ENGINE_FQDN=$(oc describe routes ovirt-engine | grep "Requested Host:" | cut -d: -f2 | xargs)
 ```
 
-### Unpause ovirt-engine deployment
+### Unpause deployments
 ```
 oc patch dc/ovirt-engine --patch '{"spec":{"paused": false}}'
+oc patch ds/vdsm-kube-ds --patch '{"spec":{"paused": false}}'
 ```
 
 Now you should be able to login as developer user (developer:admin) to the
