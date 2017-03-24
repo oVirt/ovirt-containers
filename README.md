@@ -13,20 +13,32 @@ Must use oc tool version 1.5.0 - https://github.com/openshift/origin/releases
 There are two options - running a cluster of openshift locally or using
 Minishift VM:
 ### Orchestration using Minishift
-Minisift is a VM running openshift cluster in it. This mostly being used for
+Minishift is a VM running openshift cluster in it. This mostly being used for
 testing for easy and quicker deployment without changing local environemnt
 - Install minishift - https://github.com/minishift/minishift
+  #### Nested virtualization support for the minishift VM
+  Since we are going to run VMs inside the minishift VM, it will need nested virtualization support. Minishift documentation suggests to install docker-machine-driver-kvm v0.7.0 but this is not enough to get virtualization support and docker-machine-driver-kvm v0.8.2 is needed so the right instructions to get it are:
+  ```
+  curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.8.2/docker-machine-driver-kvm >  /usr/local/bin/docker-machine-driver-kvm && \
+  chmod +x /usr/local/bin/docker-machine-driver-kvm
+  ```
+  Nested virtualization support is required on your physical system, please check it with:
+  ```
+  cat /sys/module/kvm_intel/parameters/nested
+  Y
+  ```
+  If nested virtualization is not supported, please check your OS documentation about how to enable it.
+
 - Run the following
+  ```
+  export OCTAG=v1.5.0-rc.0
+  export PROJECT=ovirt
+  export LATEST_MINISHIFT_CENTOS_ISO_BASE=$(curl -I https://github.com/minishift/minishift-centos-iso/releases/latest | grep "Location" | cut -d: -f2- | tr -d '\r' | xargs)
+  export MINISHIFT_CENTOS_ISO=${LATEST_MINISHIFT_CENTOS_ISO_BASE/tag/download}/minishift-centos7.iso
 
-```
-export OCTAG=v1.5.0-rc.0
-export PROJECT=ovirt
-export LATEST_MINISHIFT_CENTOS_ISO_BASE=$(curl -I https://github.com/minishift/minishift-centos-iso/releases/latest | grep "Location" | cut -d: -f2- | tr -d '\r' | xargs)
-export MINISHIFT_CENTOS_ISO=${LATEST_MINISHIFT_CENTOS_ISO_BASE/tag/download}/minishift-centos7.iso
-
-minishift start --memory 4096 --iso-url=$MINISHIFT_CENTOS_ISO --openshift-version=$OCTAG
-export PATH=$PATH:~/.minishift/cache/oc/$OCTAG
-```
+  minishift start --memory 4096 --iso-url=$MINISHIFT_CENTOS_ISO --openshift-version=$OCTAG
+  export PATH=$PATH:~/.minishift/cache/oc/$OCTAG
+  ```
 ### Orchestration using 'oc cluster up'
 Just follow https://github.com/openshift/origin/blob/master/docs/cluster_up_down.md#linux
 
