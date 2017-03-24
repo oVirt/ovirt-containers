@@ -20,4 +20,6 @@ ip route add default via $CLUSTER_GATEWAY dev veth_name0
 python /root/add_network.py
 
 # ovirt registration flow.
-vdsm-tool register --engine-fqdn $ENGINE_FQDN --check-fqdn false
+MYADDR=$(ip address show dev veth_name0 | grep 'inet ' | xargs | cut -d' ' -f2 | cut -d/ -f1)
+MYNAME=$(hostname -f)
+vdsm-tool register --engine-fqdn $ENGINE_FQDN --check-fqdn false --node-address $MYADDR --node-name $MYNAME
