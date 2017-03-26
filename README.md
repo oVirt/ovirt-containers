@@ -38,6 +38,7 @@ oc login -u system:admin
 
 ### Create oVirt project
 ```
+export PROJECT=oVirt
 oc new-project $PROJECT --description="oVirt" --display-name="oVirt"
 ```
 
@@ -53,7 +54,7 @@ oc create serviceaccount useroot
 oc adm policy add-scc-to-user anyuid -z useroot
 ```
 
-### Allows host IPC inside node pod
+### Allows host advanced privileges inside the node pod
 ```
 oc create serviceaccount privilegeduser
 oc adm policy add-scc-to-user privileged -z privilegeduser
