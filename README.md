@@ -38,7 +38,7 @@ oc login -u system:admin
 
 ### Create oVirt project
 ```
-export PROJECT=oVirt
+export PROJECT=ovirt
 oc new-project $PROJECT --description="oVirt" --display-name="oVirt"
 ```
 
