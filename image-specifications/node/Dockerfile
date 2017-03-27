@@ -34,8 +34,6 @@ RUN yum install -y https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release
 RUN yum install -y vdsm vdsm-cli vdsm-hook-faqemu; yum clean all;
 RUN yum install -y dhclient rsyslog iproute grub2-tools openssh-server; yum clean all;
 
-ADD scripts/* /root/
-
 # conf for host-deploy to avoid upgrading packages check
 RUN mkdir /etc/ovirt-host-deploy.conf.d
 ADD confs/50-offline-packager.conf /etc/ovirt-host-deploy.conf.d/
@@ -49,20 +47,21 @@ ADD confs/svdsm.logger.conf /etc/vdsm/svdsm.logger.conf
 ADD confs/sanlock.conf /etc/sanlock/sanlock.conf
 
 ADD confs/rsyslog.conf /etc/rsyslog.conf
-# ADD confs/journald.conf /etc/systemd/journald.conf
 
 # for some reason this file is missing when running vdsm-tool configure
 RUN touch /etc/libvirt/qemu-sanlock.conf
 
-# this is a service that will run deploy.sh after vdsm is up
-RUN mv /root/vdsm-deploy.service /usr/lib/systemd/system/
-RUN systemctl enable vdsm-deploy.service
-
-# removing multipath dependency
+# removing multipath and iscsi dependency
 RUN sed -i 's/multipathd.service //g' /usr/lib/systemd/system/vdsmd.service
+RUN sed -i 's/iscsid.service //g' /usr/lib/systemd/system/vdsmd.service
 
 # we need to enable vdsm and supervdsm to start. not part of configure yet, but should
 RUN systemctl enable vdsmd.service supervdsmd.service sshd.service rsyslog.service
+
+# COPYING SCRIPT AND ENABLE DEPLOY SYSTEMD SCRIPT RUN
+ADD scripts/* /root/
+RUN mv /root/vdsm-deploy.service /usr/lib/systemd/system/
+RUN systemctl enable vdsm-deploy.service
 
 EXPOSE 54321
 
