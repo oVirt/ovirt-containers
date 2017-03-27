@@ -38,9 +38,9 @@ else
 fi
 
 echo SSO_CALLBACK_PREFIX_CHECK=false >> /etc/ovirt-engine/engine.conf.d/999-ovirt-engine.conf
-echo "ENGINE_SSO_SERVICE_URL=\"https://localhost:8443/ovirt-engine/sso\"" >> /etc/ovirt-engine/engine.conf.d/999-ovirt-engine.conf
+echo "ENGINE_SSO_SERVICE_URL=\"https://localhost:8701/ovirt-engine/sso\"" >> /etc/ovirt-engine/engine.conf.d/999-ovirt-engine.conf
 echo "ENGINE_BASE_URL=\"https://${OVIRT_FQDN}/ovirt-engine/\"" >> /etc/ovirt-engine/engine.conf.d/999-ovirt-engine.conf
-echo "SSO_ENGINE_URL=\"https://localhost:8443/ovirt-engine/\"" >> /etc/ovirt-engine/engine.conf.d/999-ovirt-engine.conf
+echo "SSO_ENGINE_URL=\"https://localhost:8701/ovirt-engine/\"" >> /etc/ovirt-engine/engine.conf.d/999-ovirt-engine.conf
 
 export PGPASSWORD=$POSTGRES_PASSWORD
 
