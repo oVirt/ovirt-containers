@@ -15,7 +15,7 @@ echo OVESETUP_CONFIG/adminUserId=str:$OVIRT_ADMIN_UID >> answers.conf
 
 # Copy pki template files into original template location.
 # Mounts on kubernetes hide the original files in the image.
-cp -a --no-preserve=ownership /etc/pki/ovirt-engine.tmpl/* /etc/pki/ovirt-engine/
+cp -a /etc/pki/ovirt-engine.tmpl/* /etc/pki/ovirt-engine/
 
 # Wait for postgres
 dockerize -wait tcp://${POSTGRES_HOST}:${POSTGRES_PORT} -timeout 1m

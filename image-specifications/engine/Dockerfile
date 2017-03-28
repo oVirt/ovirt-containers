@@ -45,7 +45,7 @@ COPY 999-ovirt-engine.conf /etc/ovirt-engine/engine.conf.d/
 RUN patch -p0 < setup.patch
 
 # For kubernetes copy pki template files to a backup directory
-RUN cp -a --no-preserve=ownership /etc/pki/ovirt-engine /etc/pki/ovirt-engine.tmpl
+RUN cp -a /etc/pki/ovirt-engine /etc/pki/ovirt-engine.tmpl
 
 # Persist this folder to keep the generated TLS certificates on the first start
 VOLUME /etc/pki/ovirt-engine
