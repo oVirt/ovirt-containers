@@ -4,9 +4,9 @@
 # TODO: give ovirt user a well known gid and uid
 # TODO: fix redirect from http to https (port is missing)
 
-FROM centos:7.2.1511
+FROM centos:latest
 
-MAINTAINER Roman Mohr <rmohr@redhat.com>
+MAINTAINER Redhat Inc.
 
 # Database
 ENV POSTGRES_USER engine
