@@ -4,12 +4,12 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: vdsm-kube-service
+    name: node-service
   spec:
     selector:
-      name: vdsm-kube-ds
+      name: node-ds
     ports:
-      - name: vdsm-kube-logger
+      - name: node-logger
         port: 514
         protocol: TCP
         targetPort: 514
@@ -23,7 +23,7 @@ items:
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
-    name: vdsm-claim
+    name: node-claim
   spec:
     accessModes:
       - ReadWriteOnce
@@ -35,27 +35,27 @@ items:
   kind: DaemonSet
   metadata:
     labels:
-    name: vdsm-kube-ds
+    name: node-ds
   spec:
     paused: true
     template:
       metadata:
         labels:
-          name: vdsm-kube-template
+          name: node-template
       spec:
         restartPolicy: "Always"
         hostIPC: true
         serviceAccountName: privilegeduser
         containers:
           - image: docker.io/bronhaim/vdsm-kube-logger:latest
-            name: vdsm-kube-logger
+            name: node-logger
             imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 514
                 protocol: TCP
 
           - image: docker.io/bronhaim/vdsm-kube:latest
-            name: vdsm-kube
+            name: node
             ports:
               - containerPort: 54321
                 protocol: TCP
@@ -70,14 +70,6 @@ items:
                 mountPath: /dev
               - name: boot
                 mountPath: /boot
-              - name: network-scripts
-                mountPath: /etc/sysconfig/network-scripts
-              - name: vdsmdata
-                mountPath: /var/lib/vdsm/
-                subPath: var-lib-vdsm
-              - name: vdsmdata
-                mountPath: /var/run/vdsm/
-                subPath: var-run-vdsm
             env:
               - name: ENGINE_FQDN
                 value: engine-ovirt.10.34.63.173.xip.io # change in deployment if needed
@@ -87,15 +79,12 @@ items:
           - name: sys-fs-cgroup
             hostPath:
               path: /sys/fs/cgroup
-          - name: network-scripts
-            hostPath:
-              path: /etc/sysconfig/network-scripts
           - name: dev
             hostPath:
               path: /dev
           - name: boot
             hostPath:
               path: /boot
-          - name: vdsmdata
+          - name: node-persist-data
             persistentVolumeClaim:
-              claimName: vdsm-claim
+              claimName: node-claim
