@@ -58,6 +58,9 @@ RUN sed -i 's/iscsid.service //g' /usr/lib/systemd/system/vdsmd.service
 # we need to enable vdsm and supervdsm to start. not part of configure yet, but should
 RUN systemctl enable vdsmd.service supervdsmd.service sshd.service rsyslog.service
 
+# set version for host-deploy
+RUN echo $(date -u +%Y%m%d%H%M%S) > /etc/ovirt-container-node-release
+
 # COPYING SCRIPT AND ENABLE DEPLOY SYSTEMD SCRIPT RUN
 ADD scripts/* /root/
 RUN mv /root/vdsm-deploy.service /usr/lib/systemd/system/

@@ -16,6 +16,7 @@ Minishift VM:
 Minishift is a VM running openshift cluster in it. This mostly being used for
 testing for easy and quicker deployment without changing local environemnt
 - Install minishift - https://github.com/minishift/minishift
+  Please note that currently we requires a more recent build of mishift than the stable one so plese update it with https://ci.appveyor.com/project/hferentschik/minishift-o61ou/build/781/artifacts
   #### Nested virtualization support for the minishift VM
   Since we are going to run VMs inside the minishift VM, it will need nested virtualization support. Minishift documentation suggests to install docker-machine-driver-kvm v0.7.0 but this is not enough to get virtualization support and docker-machine-driver-kvm v0.8.2 is needed so the right instructions to get it are:
   ```
@@ -35,6 +36,7 @@ testing for easy and quicker deployment without changing local environemnt
   export PROJECT=ovirt
   export LATEST_MINISHIFT_CENTOS_ISO_BASE=$(curl -I https://github.com/minishift/minishift-centos-iso/releases/latest | grep "Location" | cut -d: -f2- | tr -d '\r' | xargs)
   export MINISHIFT_CENTOS_ISO=${LATEST_MINISHIFT_CENTOS_ISO_BASE/tag/download}/minishift-centos7.iso
+  export MINISHIFT_CENTOS_ISO=http://artifacts.ci.centos.org/minishift/minishift-centos-iso/pr/112/minishift-centos7.iso # TODO: remove when docker-proxy fix reaches the stable build
 
   minishift start --memory 4096 --iso-url=$MINISHIFT_CENTOS_ISO --openshift-version=$OCTAG
   export PATH=$PATH:~/.minishift/cache/oc/$OCTAG
