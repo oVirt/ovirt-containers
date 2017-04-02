@@ -17,6 +17,10 @@ items:
         port: 54321
         protocol: TCP
         targetPort: 54321
+      - name: vdsm-ssh
+        port: 222
+        protocol: TCP
+        targetPort: 22
     sessionAffinity: None
     type: ClusterIP
 
@@ -59,6 +63,9 @@ items:
             ports:
               - containerPort: 54321
                 protocol: TCP
+            ports:
+              - containerPort: 222
+                protocol: TCP
             imagePullPolicy: "IfNotPresent"
             securityContext:
               privileged: true
@@ -75,6 +82,10 @@ items:
                 value: engine-ovirt.10.34.63.173.xip.io # change in deployment if needed
               - name: CLUSTER_GATEWAY
                 value: 172.17.0.1
+              - name: MY_NODE_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
         volumes:
           - name: sys-fs-cgroup
             hostPath:
