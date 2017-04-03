@@ -5,7 +5,6 @@ After=vdsmd.service
 
 [Service]
 Type=oneshot
-EnvironmentFile=-/etc/sysconfig/vdsm
 ExecStart=/bin/sh /root/deploy.sh
 RemainAfterExit=yes
 

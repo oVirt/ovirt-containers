@@ -84,15 +84,6 @@ items:
                 mountPath: /dev
               - name: boot
                 mountPath: /boot
-            env:
-              - name: ENGINE_FQDN
-                value: engine-ovirt.10.34.63.173.xip.io # change in deployment if needed
-              - name: CLUSTER_GATEWAY
-                value: 172.17.0.1
-              - name: MY_NODE_NAME
-                valueFrom:
-                  fieldRef:
-                    fieldPath: spec.nodeName
         volumes:
           - name: sys-fs-cgroup
             hostPath:
