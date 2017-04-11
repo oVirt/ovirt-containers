@@ -46,3 +46,6 @@ OVESETUP_ASYNC/clearTasks=bool:False
 OVESETUP_DWH_CORE/enable=bool:False
 OVESETUP_DWH_PROVISIONING/postgresProvisioningEnabled=bool:False
 OVESETUP_CONFIG/imageioProxyConfig=bool:False
+
+# Don't install the the OVN provider:
+OVESETUP_OVN/ovirtProviderOvn=bool:False
