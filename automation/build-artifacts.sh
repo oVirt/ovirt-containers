@@ -2,12 +2,12 @@
 [[ -d exported-artifacts ]] \
 || mkdir -p exported-artifacts
 
-IMG_PREFIX="docker.io/bronhaim/"
+IMG_PREFIX="ovirt/"
 IMAGES_PATH="./image-specifications"
 
 # we can use here "git describe --all" if we want to keep image history
 # but then we need to change openshift deployment to use this tag
-TAGV="4.1"
+TAGV="4.1-snapshot"
 
 function clean_up {
     docker images -f dangling=true -q | xargs -r docker rmi -f
@@ -18,7 +18,7 @@ cd ${IMAGES_PATH}
 
 # TODO: add jenkins docker login
 
-for img in "base" "engine" "node" "ovirt-postgres" "syslog" "spice-squid"
+for img in "base" "engine" "vdsc" "ovirt-postgres" "vdsc-syslog" "spice-squid"
 do
   cd ${img}
   docker build -t ${IMG_PREFIX}${img}:${TAGV} .
