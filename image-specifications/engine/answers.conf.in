@@ -49,3 +49,6 @@ OVESETUP_CONFIG/imageioProxyConfig=bool:False
 
 # Don't install the the OVN provider:
 OVESETUP_OVN/ovirtProviderOvn=bool:False
+
+# Don't perform database full vacuum:
+OVESETUP_DB/engineVacuumFull=bool:False
