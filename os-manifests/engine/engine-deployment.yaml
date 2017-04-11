@@ -81,14 +81,14 @@ items:
       spec:
         serviceAccountName: useroot
         containers:
-          - image: rmohr/spice-squid
+          - image: ovirt/spice-squid:master
             name: spice-proxy
             imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 3128
                 protocol: TCP
 
-          - image: marsik/ovirt-postgres:9.2.18
+          - image: ovirt/ovirt-postgres:master
             name: postgres
             imagePullPolicy: "IfNotPresent"
             ports:
@@ -105,7 +105,7 @@ items:
               - name: POSTGRES_DATABASE
                 value: engine
 
-          - image: docker.io/bronhaim/ovirt-engine:4.1
+          - image: ovirt/engine:master
             name: ovirt-engine
             imagePullPolicy: "IfNotPresent"
             ports:

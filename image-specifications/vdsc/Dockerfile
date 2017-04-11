@@ -1,4 +1,4 @@
-FROM ovirtorg/base:4.1
+FROM ovirt/base:master
 MAINTAINER "Yaniv Bronhaim" <ybronhei@redhat.com>
 
 ENV container docker
