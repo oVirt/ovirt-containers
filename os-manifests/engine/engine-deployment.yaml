@@ -83,14 +83,14 @@ items:
         containers:
           - image: rmohr/spice-squid
             name: spice-proxy
-            imagePullPolicy: "Always"
+            imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 3128
                 protocol: TCP
 
           - image: marsik/ovirt-postgres:9.2.18
             name: postgres
-            imagePullPolicy: "Always"
+            imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 5432
                 protocol: TCP
@@ -107,7 +107,7 @@ items:
 
           - image: docker.io/bronhaim/ovirt-engine:4.1
             name: ovirt-engine
-            imagePullPolicy: "Always"
+            imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 8080
                 protocol: TCP
