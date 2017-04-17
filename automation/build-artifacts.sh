@@ -18,7 +18,7 @@ cd ${IMAGES_PATH}
 
 # TODO: add jenkins docker login
 
-for img in "engine" "node" "ovirt-postgres" "syslog" "spice-squid"
+for img in "base" "engine" "node" "ovirt-postgres" "syslog" "spice-squid"
 do
   cd ${img}
   docker build -t ${IMG_PREFIX}${img}:${TAGV} .
