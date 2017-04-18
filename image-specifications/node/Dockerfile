@@ -1,4 +1,4 @@
-FROM centos:7
+FROM ovirtorg/base:4.1
 MAINTAINER "Yaniv Bronhaim" <ybronhei@redhat.com>
 
 ENV container docker
@@ -29,7 +29,6 @@ RUN yum install -y tuned kexec-tools iptables-services; yum clean all
 RUN mkdir -p /etc/iscsi;
 # ovirt-container-node
 
-RUN yum install -y http://resources.ovirt.org/pub/yum-repo/ovirt-release41.rpm http://resources.ovirt.org/pub/yum-repo/ovirt-release41-snapshot.rpm http://resources.ovirt.org/pub/yum-repo/ovirt-release41-pre.rpm
 RUN yum install -y https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
 RUN yum install -y vdsm vdsm-cli vdsm-hook-faqemu; yum clean all;
 RUN yum install -y dhclient rsyslog iproute grub2-tools openssh-server; yum clean all;
