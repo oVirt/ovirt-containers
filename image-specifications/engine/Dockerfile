@@ -4,7 +4,7 @@
 # TODO: give ovirt user a well known gid and uid
 # TODO: fix redirect from http to https (port is missing)
 
-FROM centos:latest
+FROM ovirtorg/base:4.1
 
 MAINTAINER Redhat Inc.
 
@@ -22,8 +22,7 @@ EXPOSE 8700 8701
 
 USER root
 
-RUN yum -y localinstall http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm \
-    && yum -y install ovirt-engine patch \
+RUN yum -y install ovirt-engine patch \
     && yum -y clean all
 
 # dockerize helps us waiting for postgres being ready
