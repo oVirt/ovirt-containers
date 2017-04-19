@@ -3,7 +3,7 @@ MAINTAINER "Yaniv Bronhaim" <ybronhei@redhat.com>
 
 ENV container docker
 
-RUN echo "root:ovirt-node" | chpasswd
+RUN echo "root:root" | chpasswd
 RUN echo "options kvm-intel nested=1" > /etc/modprobe.d/kvm-intel.conf
 RUN ln -s ../boot/grub2/grub.cfg /etc/grub2.cfg
 

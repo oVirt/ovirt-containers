@@ -68,13 +68,13 @@ oc create serviceaccount useroot
 oc adm policy add-scc-to-user anyuid -z useroot
 ```
 
-### Allows host advanced privileges inside the node pod
+### Allows host advanced privileges inside the vdsc pod
 ```
 oc create serviceaccount privilegeduser
 oc adm policy add-scc-to-user privileged -z privilegeduser
 ```
 
-### Create engine and node deployments and add them to the project
+### Create engine and vdsc deployments and add them to the project
 Please note that the engine deployment is configured as paused
 ```
 oc create -f os-manifests -R
@@ -85,9 +85,9 @@ oc create -f os-manifests -R
 oc create -f os-manifests/engine -R
 ```
 
-#### To deploy just node
+#### To deploy just vdsc
 ```
-oc create -f os-manifests/node -R
+oc create -f os-manifests/vdsc -R
 ```
 
 ### Change the hostname for engine deployment and unpause it
