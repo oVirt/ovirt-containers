@@ -9,12 +9,12 @@ items:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: node-service
+    name: vdsc-service
   spec:
     selector:
-      name: node-ds
+      name: vdsc-ds
     ports:
-      - name: node-logger
+      - name: vdsc-syslog
         port: 514
         protocol: TCP
         targetPort: 514
@@ -32,7 +32,7 @@ items:
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
-    name: node-claim
+    name: vdsc-claim
   spec:
     accessModes:
       - ReadWriteOnce
@@ -44,28 +44,28 @@ items:
   kind: DaemonSet
   metadata:
     labels:
-    name: node-ds
+    name: vdsc-ds
   spec:
     paused: true
     template:
       metadata:
         labels:
-          name: node-template
+          name: vdsc-template
       spec:
         restartPolicy: "Always"
         hostIPC: true
         serviceAccountName: privilegeduser
         containers:
-          - image: docker.io/bronhaim/vdsm-kube-logger:latest
-            name: node-logger
+          - image: ovirt/vdsc-syslog:latest
+            name: vdsc-syslog
             imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 514
                 protocol: TCP
                 hostPort: 514
 
-          - image: docker.io/bronhaim/vdsm-kube:latest
-            name: node
+          - image: ovirt/vdsc:latest
+            name: vdsc
             ports:
               - containerPort: 54321
                 protocol: TCP
@@ -94,6 +94,6 @@ items:
           - name: boot
             hostPath:
               path: /boot
-          - name: node-persist-data
+          - name: vdsc-persist-data
             persistentVolumeClaim:
-              claimName: node-claim
+              claimName: vdsc-claim
