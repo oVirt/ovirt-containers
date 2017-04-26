@@ -88,7 +88,7 @@ items:
               - containerPort: 3128
                 protocol: TCP
 
-          - image: ovirt/ovirt-postgres:master
+          - image: ovirt/engine-database:master
             name: postgres
             imagePullPolicy: "IfNotPresent"
             ports:
