@@ -81,7 +81,7 @@ items:
       spec:
         serviceAccountName: useroot
         containers:
-          - image: ovirt/spice-squid:master
+          - image: ovirt/engine-spice-proxy:master
             name: spice-proxy
             imagePullPolicy: "IfNotPresent"
             ports:
