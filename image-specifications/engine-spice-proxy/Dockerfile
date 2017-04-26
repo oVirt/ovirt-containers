@@ -1,4 +1,4 @@
-FROM centos:7.2.1511
+FROM ovirt/base:master
 
 MAINTAINER Roman Mohr <rmohr@redhat.com>
 
