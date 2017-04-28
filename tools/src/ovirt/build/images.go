@@ -141,10 +141,28 @@ func (i *Image) Build() error {
 // Push pushes the image to the docker registry.
 //
 func (i *Image) Push() error {
+	// Get the global configuration:
+	config := GlobalConfig()
+
+	// Tag the image adding the registry name as a prefix, as this
+	// is needed in order to push it:
+	imageTag := i.Tag()
+	registryTag := fmt.Sprintf("%s/%s", config.Registry(), imageTag)
+	err := RunCommand(
+		"docker",
+		"tag",
+		imageTag,
+		registryTag,
+	)
+	if err != nil {
+		return err
+	}
+
+	// Push the image:
 	return RunCommand(
 		"docker",
 		"push",
-		i.Tag(),
+		registryTag,
 	)
 }
 
