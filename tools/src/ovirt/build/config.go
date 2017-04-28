@@ -20,158 +20,37 @@ package build
 // the build configuration file.
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
-	"strings"
+
+	"gopkg.in/ini.v1"
 )
-
-// Config provides mechanims to load and query a set of configuration
-// parameters.
-//
-// This configuration can be loaded from a file with a syntax similar to
-// java properties files, or to the /etc/sysconfig/files used by Linux
-// distributions like Fedora and CentOS.
-//
-type Config struct {
-	values map[string]string
-}
-
-// NewConfig creates a new configuratoin object.
-//
-func NewConfig() *Config {
-	c := new(Config)
-	c.values = make(map[string]string)
-	return c
-}
-
-// Load loads the configuration from given reader.
-//
-func (c *Config) Load(reader io.Reader) error {
-	// Read line by line, discarding empty lines and comments, and
-	// jonining continuation lines. The result will be stored in a
-	// temporary slice that will be later be processed to extract
-	// the actual values.
-	lines := make([]string, 0)
-	scanner := bufio.NewScanner(reader)
-	buffer := ""
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.TrimSpace(line) == "" {
-			continue
-		}
-		if line[0] == '#' || line[0] == ';' {
-			continue
-		}
-		last := len(line) - 1
-		if line[last] == '\\' {
-			buffer += line[:last]
-			buffer += " "
-		} else {
-			buffer += line
-			lines = append(lines, buffer)
-			buffer = ""
-		}
-	}
-	if buffer != "" {
-		lines = append(lines, buffer)
-	}
-
-	// Process the lines and extract the values:
-	for _, line := range lines {
-		index := strings.Index(line, "=")
-		if index != -1 {
-			name := strings.TrimSpace(line[:index])
-			value := strings.TrimSpace(line[index+1:])
-			c.values[name] = value
-		}
-	}
-
-	return nil
-}
-
-// LoadFile loads the configuration from the file with the given path.
-//
-func (c *Config) LoadFile(path string) error {
-	// Create a reader to read the string:
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Load the file:
-	return c.Load(file)
-}
-
-// LoadText loads the configuration from the given text.
-//
-func (c *Config) LoadText(text string) error {
-	return c.Load(strings.NewReader(text))
-}
-
-// Has checks if the configuration contains the given parameter.
-//
-func (c *Config) Has(name string) bool {
-	_, has := c.values[name]
-	return has
-}
-
-// Get returns the string containing the value of the given parameter.
-//
-func (c *Config) Get(name string) string {
-	value, has := c.values[name]
-	if has {
-		return value
-	}
-	return ""
-}
 
 // BuildConfig contains the build configuration.
 //
 type BuildConfig struct {
-	config *Config
-}
-
-// NewBuildConfig creates a new empty build configuration.
-//
-func NewBuildConfig() *BuildConfig {
-	b := new(BuildConfig)
-	b.config = NewConfig()
-	return b
-}
-
-// LoadFile loads the build configuratoin from the given file.
-//
-func (b *BuildConfig) LoadFile(path string) error {
-	return b.config.LoadFile(path)
-}
-
-// LoadText loads the build configuratoin from the given text.
-//
-func (b *BuildConfig) LoadText(path string) error {
-	return b.config.LoadText(path)
+	file  *ini.File
+	build *ini.Section
 }
 
 // Version returns the version of the project stored in the
 // configuration.
 //
 func (b *BuildConfig) Version() string {
-	return b.config.Get("version")
+	return b.build.Key("version").MustString("")
 }
 
 // Version returns the image prefix stored in the configuration.
 //
 func (b *BuildConfig) Prefix() string {
-	return b.config.Get("prefix")
+	return b.build.Key("prefix").MustString("")
 }
 
 // Images returns the path of the directory containing the source files
 // of the image specifications.
 //
 func (b *BuildConfig) Images() string {
-	return b.config.Get("images")
+	return b.build.Key("images").MustString("")
 }
 
 // Default global configuration data. This will be loaded first, and
@@ -179,6 +58,7 @@ func (b *BuildConfig) Images() string {
 // value that is present.
 //
 const globalData = `
+[build]
 version=master
 prefix=ovirt
 images=image-specifications
@@ -195,8 +75,9 @@ var globalConfig *BuildConfig
 func GlobalConfig() *BuildConfig {
 	if globalConfig == nil {
 		var err error
-		globalConfig = NewBuildConfig()
-		err = globalConfig.LoadText(globalData)
+		globalConfig = new(BuildConfig)
+		globalConfig.file = ini.Empty()
+		err = globalConfig.file.Append([]byte(globalData))
 		if err != nil {
 			fmt.Fprintf(
 				os.Stderr,
@@ -204,11 +85,19 @@ func GlobalConfig() *BuildConfig {
 			)
 			os.Exit(1)
 		}
-		err = globalConfig.LoadFile("build.conf")
+		err = globalConfig.file.Append("build.conf")
 		if err != nil {
 			fmt.Fprintf(
 				os.Stderr,
 				"Can't load global configuration file 'build.conf'\n",
+			)
+			os.Exit(1)
+		}
+		globalConfig.build = globalConfig.file.Section("build")
+		if globalConfig.build == nil {
+			fmt.Fprintf(
+				os.Stderr,
+				"The global configuration file doesn't contain a 'build' section\n",
 			)
 			os.Exit(1)
 		}
