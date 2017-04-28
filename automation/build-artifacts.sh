@@ -10,7 +10,11 @@ trap clean_up SIGHUP SIGINT SIGTERM
 
 # TODO: add jenkins docker login
 
+# Build the images:
 make build
-make push
+
+# Pushing the images to the registry is currently disabled because
+# Jenkins doesn't have yet the required credentials.
+#make push
 
 clean_up
