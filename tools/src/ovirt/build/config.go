@@ -53,6 +53,13 @@ func (b *BuildConfig) Images() string {
 	return b.build.Key("images").MustString("")
 }
 
+// Registry returns the address of the Docker registry where images
+// should be pushed to.
+//
+func (b *BuildConfig) Registry() string {
+	return b.build.Key("registry").MustString("")
+}
+
 // Default global configuration data. This will be loaded first, and
 // then the build.conf file will be loaded on top of it, overriding any
 // value that is present.
@@ -62,6 +69,7 @@ const globalData = `
 version=master
 prefix=ovirt
 images=image-specifications
+registry=localhost:5000
 `
 
 // The global configuration, which will be lazily loaded the first time
