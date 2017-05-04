@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 // Image contains the description of an image, as well as methods to
@@ -135,6 +136,38 @@ func (i *Image) Build() error {
 		"build",
 		fmt.Sprintf("--tag=%s", i.Tag()),
 		i.Path(),
+	)
+}
+
+// Saves the image to a tar file.
+//
+func (i *Image) Save() error {
+	// Get the tag of the image and calculate a file name from it,
+	// replacing all characters that aren't convenient in file names
+	// (slashes and colons) with dashes:
+	tag := i.Tag()
+	replacer := strings.NewReplacer(
+		"/", "-",
+		":", "-",
+	)
+	path := replacer.Replace(tag) + ".tar"
+
+	// Save the image to a tar file:
+	err := RunCommand(
+		"docker",
+		"save",
+		tag,
+		fmt.Sprintf("--output=%s", path),
+	)
+	if err != nil {
+		return err
+	}
+
+	// Compress the tar file, using gzip:
+	return RunCommand(
+		"gzip",
+		"--force",
+		path,
 	)
 }
 
