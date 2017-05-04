@@ -1,0 +1,7 @@
+*.gz
+*.log
+*.tar
+/exported-artifacts/
+/tools/bin/
+/tools/pkg/
+/tools/src/gopkg.in/
