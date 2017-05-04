@@ -27,9 +27,20 @@
 
 .PHONY: all clean
 
+# Go path:
+GOPATH="$(PWD)/tools"
+
+# Go dependencies:
+GODEPS=\
+	gopkg.in/ini.v1 \
+	$(NULL)
+
 # Rule to build a tool from its source code:
 tools/bin/%: $(shell find tools/src -type f)
-	GOPATH="$(PWD)/tools" go install ovirt/cmd/$(notdir $@)
+	for godep in $(GODEPS); do \
+		GOPATH="$(GOPATH)" go get $${godep}; \
+	done
+	GOPATH="$(GOPATH)" go install ovirt/cmd/$(notdir $@)
 
 build: tools/bin/build
 	$< 2>&1 | tee $@.log
