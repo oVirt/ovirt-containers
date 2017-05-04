@@ -13,6 +13,11 @@ trap clean_up SIGHUP SIGINT SIGTERM
 # Build the images:
 make build
 
+# Save the images to tar files, and move them to the exported artifacts
+# directory:
+make save
+mv *.tar.gz exported-artifacts
+
 # Pushing the images to the registry is currently disabled because
 # Jenkins doesn't have yet the required credentials.
 #make push

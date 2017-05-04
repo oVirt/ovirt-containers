@@ -45,6 +45,9 @@ tools/bin/%: $(shell find tools/src -type f)
 build: tools/bin/build
 	$< 2>&1 | tee $@.log
 
+save: tools/bin/save
+	$< 2>&1 | tee $@.log
+
 push: tools/bin/push
 	$< 2>&1 | tee $@.log
 
