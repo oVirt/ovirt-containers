@@ -3,10 +3,18 @@
 || mkdir -p exported-artifacts
 
 function clean_up {
-    make clean
+    # We want to return the status of the last command executed *before*
+    # cleaning, so we need to save it.
+    local status="$?"
+
+    # Do not exit inmediately if the cleaning fails, as we want to
+    # report the status of the build, not of the cleaning.
+    make clean || true
+
+    exit "${status}"
 }
 
-trap clean_up SIGHUP SIGINT SIGTERM
+trap clean_up EXIT SIGHUP SIGINT SIGTERM
 
 # TODO: add jenkins docker login
 
