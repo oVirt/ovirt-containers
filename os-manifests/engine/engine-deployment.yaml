@@ -98,12 +98,14 @@ items:
               - mountPath: /var/lib/postgresql/data
                 name: pgdata
             env:
-              - name: POSTGRES_USER
+              - name: POSTGRESQL_USER
                 value: engine
-              - name: POSTGRES_PASSWORD
+              - name: POSTGRESQL_PASSWORD
                 value: engine
-              - name: POSTGRES_DATABASE
+              - name: POSTGRESQL_DATABASE
                 value: engine
+              - name: POSTGRESQL_MAX_CONNECTIONS
+                value: "150"
 
           - image: ovirt/engine:4.1-snapshot
             name: ovirt-engine
