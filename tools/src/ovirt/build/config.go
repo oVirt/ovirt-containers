@@ -17,7 +17,7 @@ limitations under the License.
 package build
 
 // This file contains types and functions used to load and manipulate
-// the build configuration file.
+// the project configuration file.
 
 import (
 	"fmt"
@@ -26,9 +26,9 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// BuildConfig contains the build configuration.
+// ProjectConfig contains the project configuration.
 //
-type BuildConfig struct {
+type ProjectConfig struct {
 	file  *ini.File
 	build *ini.Section
 }
@@ -36,33 +36,33 @@ type BuildConfig struct {
 // Version returns the version of the project stored in the
 // configuration.
 //
-func (b *BuildConfig) Version() string {
-	return b.build.Key("version").MustString("")
+func (p *ProjectConfig) Version() string {
+	return p.build.Key("version").MustString("")
 }
 
 // Version returns the image prefix stored in the configuration.
 //
-func (b *BuildConfig) Prefix() string {
-	return b.build.Key("prefix").MustString("")
+func (p *ProjectConfig) Prefix() string {
+	return p.build.Key("prefix").MustString("")
 }
 
 // Images returns the path of the directory containing the source files
 // of the image specifications.
 //
-func (b *BuildConfig) Images() string {
-	return b.build.Key("images").MustString("")
+func (p *ProjectConfig) Images() string {
+	return p.build.Key("images").MustString("")
 }
 
 // Registry returns the address of the Docker registry where images
 // should be pushed to.
 //
-func (b *BuildConfig) Registry() string {
-	return b.build.Key("registry").MustString("")
+func (p *ProjectConfig) Registry() string {
+	return p.build.Key("registry").MustString("")
 }
 
-// Default global configuration data. This will be loaded first, and
-// then the build.conf file will be loaded on top of it, overriding any
-// value that is present.
+// Default global project configuration data. This will be loaded first,
+// and then the project.conf file will be loaded on top of it,
+// overriding any value that is present.
 //
 const globalData = `
 [build]
@@ -75,15 +75,15 @@ registry=localhost:5000
 // The global configuration, which will be lazily loaded the first time
 // tha the GlobalConfig function is called.
 //
-var globalConfig *BuildConfig
+var globalConfig *ProjectConfig
 
 // GlobalConfig returns the global configuration loaded from the
-// build.conf file.
+// project.conf file.
 //
-func GlobalConfig() *BuildConfig {
+func GlobalConfig() *ProjectConfig {
 	if globalConfig == nil {
 		var err error
-		globalConfig = new(BuildConfig)
+		globalConfig = new(ProjectConfig)
 		globalConfig.file = ini.Empty()
 		err = globalConfig.file.Append([]byte(globalData))
 		if err != nil {
@@ -93,11 +93,13 @@ func GlobalConfig() *BuildConfig {
 			)
 			os.Exit(1)
 		}
-		err = globalConfig.file.Append("build.conf")
+		globalPath := "project.conf"
+		err = globalConfig.file.Append(globalPath)
 		if err != nil {
 			fmt.Fprintf(
 				os.Stderr,
-				"Can't load global configuration file 'build.conf'\n",
+				"Can't load global configuration file '%s'\n",
+				globalPath,
 			)
 			os.Exit(1)
 		}
@@ -105,7 +107,8 @@ func GlobalConfig() *BuildConfig {
 		if globalConfig.build == nil {
 			fmt.Fprintf(
 				os.Stderr,
-				"The global configuration file doesn't contain a 'build' section\n",
+				"The global configuration file '%s' doesn't contain a 'build' section\n",
+				globalPath,
 			)
 			os.Exit(1)
 		}
