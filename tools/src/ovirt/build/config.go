@@ -29,35 +29,55 @@ import (
 // ProjectConfig contains the project configuration.
 //
 type ProjectConfig struct {
-	file  *ini.File
-	build *ini.Section
+	file   *ini.File
+	images *ImagesConfig
 }
 
-// Version returns the version of the project stored in the
-// configuration.
+// ImagesConfig contains the configuration items related to images.
 //
-func (p *ProjectConfig) Version() string {
-	return p.build.Key("version").MustString("")
+type ImagesConfig struct {
+	section *ini.Section
 }
 
-// Version returns the image prefix stored in the configuration.
+// Images returns the set of items related to images.
 //
-func (p *ProjectConfig) Prefix() string {
-	return p.build.Key("prefix").MustString("")
+func (p *ProjectConfig) Images() *ImagesConfig {
+	if p.images == nil {
+		section := p.file.Section("images")
+		if section != nil {
+			p.images = new(ImagesConfig)
+			p.images.section = section
+		}
+	}
+	return p.images
 }
 
-// Images returns the path of the directory containing the source files
-// of the image specifications.
+// Version returns the version that should be used to tag the images of
+// the project.
 //
-func (p *ProjectConfig) Images() string {
-	return p.build.Key("images").MustString("")
+func (i *ImagesConfig) Version() string {
+	return i.section.Key("version").MustString("")
+}
+
+// Version returns the prefix that should be used to tag the images of
+// the project.
+//
+func (i *ImagesConfig) Prefix() string {
+	return i.section.Key("prefix").MustString("")
+}
+
+// Directory returns the path of the directory containing the source
+// files of the image specifications.
+//
+func (i *ImagesConfig) Directory() string {
+	return i.section.Key("directory").MustString("")
 }
 
 // Registry returns the address of the Docker registry where images
 // should be pushed to.
 //
-func (p *ProjectConfig) Registry() string {
-	return p.build.Key("registry").MustString("")
+func (i *ImagesConfig) Registry() string {
+	return i.section.Key("registry").MustString("")
 }
 
 // Default global project configuration data. This will be loaded first,
@@ -65,10 +85,10 @@ func (p *ProjectConfig) Registry() string {
 // overriding any value that is present.
 //
 const globalData = `
-[build]
+[images]
 version=master
 prefix=ovirt
-images=image-specifications
+directory=image-specifications
 registry=localhost:5000
 `
 
@@ -103,11 +123,11 @@ func GlobalConfig() *ProjectConfig {
 			)
 			os.Exit(1)
 		}
-		globalConfig.build = globalConfig.file.Section("build")
-		if globalConfig.build == nil {
+		images := globalConfig.Images()
+		if images == nil {
 			fmt.Fprintf(
 				os.Stderr,
-				"The global configuration file '%s' doesn't contain a 'build' section\n",
+				"The global configuration file '%s' doesn't contain a 'images' section\n",
 				globalPath,
 			)
 			os.Exit(1)

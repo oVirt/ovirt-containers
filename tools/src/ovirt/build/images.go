@@ -68,7 +68,7 @@ func (i *Image) Load(path string) *Image {
 	}
 
 	// Set the version:
-	i.version = config.Version()
+	i.version = config.Images().Version()
 
 	return i
 }
@@ -106,7 +106,7 @@ func (i *Image) Tag() string {
 	// the build configuration, the image name, and the image
 	// version:
 	config := GlobalConfig()
-	return fmt.Sprintf("%s/%s:%s", config.Prefix(), i.name, i.version)
+	return fmt.Sprintf("%s/%s:%s", config.Images().Prefix(), i.name, i.version)
 }
 
 // Dockerfile returns the object that describes the Dockerfile used by
@@ -180,7 +180,7 @@ func (i *Image) Push() error {
 	// Tag the image adding the registry name as a prefix, as this
 	// is needed in order to push it:
 	imageTag := i.Tag()
-	registryTag := fmt.Sprintf("%s/%s", config.Registry(), imageTag)
+	registryTag := fmt.Sprintf("%s/%s", config.Images().Registry(), imageTag)
 	err := RunCommand(
 		"docker",
 		"tag",
@@ -229,7 +229,7 @@ func LoadImages() []*Image {
 	// are the directories that will be considered as image
 	// directories.
 	images := []*Image{}
-	filepath.Walk(config.Images(), func(path string, info os.FileInfo, err error) error {
+	filepath.Walk(config.Images().Directory(), func(path string, info os.FileInfo, err error) error {
 		if info.Name() == "Dockerfile" {
 			image := NewImage().Load(filepath.Dir(path))
 			images = append(images, image)
@@ -253,7 +253,7 @@ func LoadImages() []*Image {
 			continue
 		}
 		prefix := groups["prefix"]
-		if prefix != config.Prefix() {
+		if prefix != config.Images().Prefix() {
 			continue
 		}
 		name := groups["name"]
