@@ -37,6 +37,18 @@ items:
     wildcardPolicy: None
 
 - apiVersion: v1
+  kind: Route
+  metadata:
+    name: ovirt-spice-proxy
+  spec:
+    to:
+      kind: Service
+      name: ovirt-engine
+    port:
+      targetPort: ovirt-spice-proxy
+    wildcardPolicy: None
+
+- apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
     name: ovirt-db-claim

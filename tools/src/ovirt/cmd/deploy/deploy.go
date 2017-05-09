@@ -115,6 +115,12 @@ func main() {
 		"ovirt-engine",
 		"--output=jsonpath={.spec.host}",
 	)
+	spiceProxyHost := evalOc(
+		"get",
+		"routes",
+		"ovirt-spice-proxy",
+		"--output=jsonpath={.spec.host}",
+	)
 	runOc(
 		"set",
 		"env",
@@ -122,6 +128,7 @@ func main() {
 		"-c",
 		"ovirt-engine",
 		"OVIRT_FQDN="+engineHost,
+		"SPICE_PROXY=http://"+spiceProxyHost+":3128",
 	)
 	runOc(
 		"patch",

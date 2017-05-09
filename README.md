@@ -95,6 +95,7 @@ oc create -f os-manifests/vdsc -R
 According to the hostname that was assigned to the associated route
 ```
 oc set env dc/ovirt-engine -c ovirt-engine OVIRT_FQDN=$(oc describe routes ovirt-engine | grep "Requested Host:" | cut -d: -f2 | xargs)
+oc set env dc/ovirt-engine -c ovirt-engine SPICE_PROXY=http://$(oc describe routes ovirt-spice-proxy | grep "Requested Host:" | cut -d: -f2 | xargs):3128
 oc patch dc/ovirt-engine --patch '{"spec":{"paused": false}}'
 ```
 
