@@ -1,7 +1,11 @@
-FROM alpine:3.5
+FROM ovirt/base:master
+
 MAINTAINER "Yaniv Bronhaim" <ybronhei@redhat.com>
-RUN apk update && apk add rsyslog && rm -rf /var/cache/apk/*
+
+RUN yum -y install rsyslog && yum -y clean all
 
 EXPOSE 514 514/tcp
-COPY rsyslog.conf /etc/rsyslog.conf
-ENTRYPOINT [ "rsyslogd", "-n", "-f", "/etc/rsyslog.conf" ]
+
+COPY root /
+
+ENTRYPOINT /entrypoint.sh
