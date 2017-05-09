@@ -51,6 +51,9 @@ save: tools/bin/save
 push: tools/bin/push
 	$< 2>&1 | tee $@.log
 
+deploy: tools/bin/deploy
+	$< 2>&1 | tee $@.log
+
 clean:
 	rm -rf tools/{bin,pkg}
 	docker images --filter dangling=true --quiet | xargs -r docker rmi --force
