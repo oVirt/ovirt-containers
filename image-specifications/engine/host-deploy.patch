@@ -1,0 +1,20 @@
+--- /usr/share/ovirt-host-deploy/plugins/ovirt-host-deploy/kernel/kernel_backup.py      2017-05-10 11:45:55.676000000 +0000
++++ /usr/share/ovirt-host-deploy/plugins/ovirt-host-deploy/kernel/kernel.py     2017-05-10 12:17:54.716000000 +0000
+@@ -98,7 +98,7 @@
+     def _validation(self):
+         if not self.environment[
+             odeploycons.VdsmEnv.OVIRT_VINTAGE_NODE
+-        ]:
++        ] and False:
+             if self.command.get('grubby', optional=True):
+                 self._enabled = True
+             else:
+@@ -107,7 +107,7 @@
+                 )
+         else:
+             self.logger.warning(
+-                'Vintage node, skipping kernel arguments.'
++                'vdsc, skipping kernel arguments.'
+             )
+
+     @plugin.event(

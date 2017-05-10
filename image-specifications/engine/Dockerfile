@@ -37,11 +37,13 @@ RUN ln -s /usr/sbin/service /usr/bin/initctl
 ENV OVIRT_PASSWORD engine
 ENV OVIRT_PKI_ORGANIZATION oVirt
 
-COPY entrypoint.sh answers.conf.in setup.patch /
+COPY entrypoint.sh answers.conf.in setup.patch host-deploy.patch /
 COPY 999-ovirt-engine.conf /etc/ovirt-engine/engine.conf.d/
 
 # patch engine-setup so that it does not try to start or stop services with systemd
 RUN patch -p0 < setup.patch
+# patch host-deploy so that it does not try to configure kernel arguments
+RUN patch -p0 < host-deploy.patch
 
 # For kubernetes copy pki template files to a backup directory
 RUN cp -a /etc/pki/ovirt-engine /etc/pki/ovirt-engine.tmpl
