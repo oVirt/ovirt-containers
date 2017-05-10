@@ -1,4 +1,4 @@
-FROM ovirt/base:master
+FROM ovirt/base:4.1-snapshot
 
 MAINTAINER Roman Mohr <rmohr@redhat.com>
 
