@@ -21,6 +21,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"ovirt/build"
 )
@@ -40,6 +44,10 @@ const (
 )
 
 func main() {
+	// Check that the 'oc' tool is available and that it is the
+	// right version:
+	validateOc()
+
 	// Log in as system administrator:
 	runOc(
 		"login",
@@ -140,6 +148,108 @@ func main() {
 			}
 		}`,
 	)
+}
+
+// Regular expression used to extract the version of the 'oc' tool from
+// the first line of output of the 'oc version' command. The typical
+// output from that command is something like this:
+//
+//	oc v1.5.0+031cbe4
+//	kubernetes v1.5.2+43a9be4
+//	features: Basic-Auth GSSAPI Kerberos SPNEGO
+//
+// This regular expression captures the major, minor and micro version
+// numbers of the first line.
+//
+var ocVersionRe = regexp.MustCompile(
+	"^oc\\s+v(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<micro>\\d+).*$",
+)
+
+// Minimum supported 'oc' version.
+//
+const (
+	minOcMajor = 1
+	minOcMinor = 5
+)
+
+// ValidateOc checks that the OpenShift 'oc' tool is installed and that
+// it is the right version. If the validation fails it prints an error
+// message and aborts the application.
+//
+func validateOc() {
+	// Get the value of the PATH environment variable:
+	path, present := os.LookupEnv("PATH")
+	if !present {
+		fmt.Fprintf(
+			os.Stderr,
+			"The PATH environment variable isn't set, can't locate the 'oc' tool'.\n",
+		)
+		os.Exit(1)
+	}
+
+	// Check that the 'oc' tools is available in one of the
+	// directories specified in the PATH environment variable:
+	dirs := strings.Split(path, string(os.PathListSeparator))
+	exec := ""
+	for _, dir := range dirs {
+		file := filepath.Join(dir, "oc")
+		info, err := os.Lstat(file)
+		if err != nil || info.IsDir() {
+			continue
+		}
+		if info.Mode()|0111 != 0 {
+			exec = file
+			break
+		}
+	}
+	if exec == "" {
+		fmt.Fprintf(
+			os.Stderr,
+			"Can't find the 'oc' tool in the path.\n",
+		)
+		os.Exit(1)
+	}
+
+	// Run the tool to extract the version number, and check that it
+	// is what we expect:
+	out := build.EvalCommand("oc", "version")
+	if out == nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Failed to run 'oc version'.\n",
+		)
+		os.Exit(1)
+	}
+	lines := strings.Split(string(out), "\n")
+	if len(lines) < 1 {
+		fmt.Fprint(
+			os.Stderr,
+			"Output of 'oc version' is empty.\n",
+		)
+		os.Exit(1)
+	}
+	line := lines[0]
+	groups := build.FindRegexpGroups(lines[0], ocVersionRe)
+	if len(groups) <= 1 {
+		fmt.Fprintf(
+			os.Stderr,
+			"The 'oc' version line '%s' doesn't match the expected regular expression.\n",
+			line,
+		)
+		os.Exit(1)
+	}
+	major, _ := strconv.Atoi(groups["major"])
+	minor, _ := strconv.Atoi(groups["minor"])
+	micro, _ := strconv.Atoi(groups["micro"])
+	if major < minOcMajor || (major == minOcMajor && minor < minOcMinor) {
+		fmt.Fprintf(
+			os.Stderr,
+			"Version %d.%d.%d of 'oc' isn't supported, should be at least %d.%d.\n",
+			major, minor, micro,
+			minOcMajor, minOcMinor,
+		)
+		os.Exit(1)
+	}
 }
 
 func runOc(args ...string) {
