@@ -84,6 +84,8 @@ items:
                 mountPath: /dev
               - name: boot
                 mountPath: /boot
+              - name: lib-modules
+                mountPath: /lib/modules
         volumes:
           - name: sys-fs-cgroup
             hostPath:
@@ -97,3 +99,6 @@ items:
           - name: vdsc-persist-data
             persistentVolumeClaim:
               claimName: vdsc-claim
+          - name: lib-modules
+            hostPath:
+              path: /lib/modules
