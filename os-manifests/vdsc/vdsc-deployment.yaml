@@ -86,6 +86,11 @@ items:
                 mountPath: /boot
               - name: lib-modules
                 mountPath: /lib/modules
+            env:
+              - name: MY_NODE_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
         volumes:
           - name: sys-fs-cgroup
             hostPath:
