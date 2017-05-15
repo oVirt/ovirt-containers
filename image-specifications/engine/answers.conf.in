@@ -52,3 +52,9 @@ OVESETUP_OVN/ovirtProviderOvn=bool:False
 
 # Don't perform database full vacuum:
 OVESETUP_DB/engineVacuumFull=bool:False
+
+# Work with PostgreSQL 9.5 from SCL
+COMMAND/pg_dump=str:/opt/rh/rh-postgresql95/root/usr/bin/pg_dump
+COMMAND/psql=str:/opt/rh/rh-postgresql95/root/usr/bin/psql
+COMMAND/pg_restore=str:/opt/rh/rh-postgresql95/root/usr/bin/pg_restore
+COMMAND/postgresql-setup=str:/opt/rh/rh-postgresql95/root/usr/bin/postgresql-setup
