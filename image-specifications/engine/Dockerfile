@@ -22,7 +22,7 @@ EXPOSE 8700 8701
 
 USER root
 
-RUN yum -y install ovirt-engine patch \
+RUN yum -y install ovirt-engine patch rh-postgresql95-postgresql \
     && yum -y clean all
 
 # dockerize helps us waiting for postgres being ready

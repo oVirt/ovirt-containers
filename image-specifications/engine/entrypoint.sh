@@ -23,7 +23,7 @@ chown ovirt:ovirt /etc/pki/ovirt-engine
 # Wait for postgres
 dockerize -wait tcp://${POSTGRES_HOST}:${POSTGRES_PORT} -timeout 1m
 
-engine-setup --config=answers.conf --offline
+scl enable rh-postgresql95 -- engine-setup --config=answers.conf --offline
 
 if [ -n "$SPICE_PROXY" ]; then
   engine-config -s SpiceProxyDefault=$SPICE_PROXY

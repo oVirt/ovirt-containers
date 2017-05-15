@@ -25,6 +25,7 @@ yum -y install http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
 # Add here the lines to install other packages that are used/useful in
 # all the oVirt containers:
 #yum -y install ...
+yum -y install centos-release-scl
 
 # Clean the yum database:
 yum -y clean all
