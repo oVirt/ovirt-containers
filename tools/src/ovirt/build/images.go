@@ -199,6 +199,16 @@ func (i *Image) Push() error {
 	)
 }
 
+// Remove removes the image from the local docker storage.
+//
+func (i *Image) Remove() error {
+	return RunCommand(
+		"docker",
+		"rmi",
+		i.Tag(),
+	)
+}
+
 // Regular expression used to extract the name and version of an image
 // from the value of the FROM instruction of a Dockerfile.
 //
