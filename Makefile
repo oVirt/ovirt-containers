@@ -54,6 +54,7 @@ push: tools/bin/push
 deploy: tools/bin/deploy
 	$< 2>&1 | tee $@.log
 
-clean:
+clean: tools/bin/clean
+	$< 2>&1 | tee $@.log
 	rm -rf tools/{bin,pkg}
 	docker images --filter dangling=true --quiet | xargs -r docker rmi --force
