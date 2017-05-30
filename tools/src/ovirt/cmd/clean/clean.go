@@ -27,21 +27,28 @@ import (
 )
 
 func main() {
-	// Load the images:
-	images := build.LoadImages()
+	// Load the project:
+	project, err := build.LoadProject("")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err)
+		os.Exit(1)
+	}
+	defer project.Close()
 
 	// The list of images is always returned in build order, with
 	// base images before the images that depend on them. In order
 	// to remove them without issues we need to reverse that order,
 	// so that base images are removed after the images that depend
 	// on them.
+	images := project.Images().List()
 	for i := len(images) - 1; i >= 0; i-- {
 		image := images[i]
 		fmt.Printf("Remove image '%s'\n", image)
 		err := image.Remove()
 		if err != nil {
 			fmt.Fprintf(
-				os.Stderr, "Failed to remove image '%s'\n",
+				os.Stderr,
+				"Failed to remove image '%s'\n",
 				image,
 			)
 			os.Exit(1)

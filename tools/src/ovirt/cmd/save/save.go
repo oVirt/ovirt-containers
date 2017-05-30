@@ -26,8 +26,16 @@ import (
 )
 
 func main() {
-	images := build.LoadImages()
-	for _, image := range images {
+	// Load the project:
+	project, err := build.LoadProject("")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err)
+		os.Exit(1)
+	}
+	defer project.Close()
+
+	// Save the images:
+	for _, image := range project.Images().List() {
 		fmt.Printf("Saving image '%s'\n", image)
 		err := image.Save()
 		if err != nil {

@@ -44,6 +44,17 @@ const (
 )
 
 func main() {
+	// Load the project:
+	project, err := build.LoadProject("")
+	if err != nil {
+		fmt.Fprintf(
+			os.Stderr,
+			"Can't load project: %s\n",
+			err,
+		)
+	}
+	defer project.Close()
+
 	// Check that the 'oc' tool is available and that it is the
 	// right version:
 	validateOc()
@@ -110,7 +121,7 @@ func main() {
 	runOc(
 		"create",
 		"-f",
-		"os-manifests",
+		project.Manifests().Directory(),
 		"-R",
 	)
 

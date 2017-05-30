@@ -26,13 +26,21 @@ import (
 )
 
 func main() {
-	images := build.LoadImages()
-	for _, image := range images {
-		fmt.Printf("Building image '%s'\n", image)
+	// Load the project:
+	project, err := build.LoadProject("")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err);
+		os.Exit(1)
+	}
+	defer project.Close()
+
+	// Build the images:
+	for _, image := range project.Images().List() {
+		fmt.Printf("Building image '%s'.\n", image)
 		err := image.Build()
 		if err != nil {
 			fmt.Fprintf(
-				os.Stderr, "Failed to build image '%s'\n",
+				os.Stderr, "Failed to build image '%s'.\n",
 				image,
 			)
 			os.Exit(1)
