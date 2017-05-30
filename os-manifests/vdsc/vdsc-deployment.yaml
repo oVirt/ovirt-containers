@@ -56,7 +56,7 @@ items:
         hostIPC: true
         serviceAccountName: privilegeduser
         containers:
-          - image: ovirt/vdsc-syslog:master
+          - image: {{ tag "vdsc-syslog" }}
             name: vdsc-syslog
             imagePullPolicy: "IfNotPresent"
             ports:
@@ -64,7 +64,7 @@ items:
                 protocol: TCP
                 hostPort: 514
 
-          - image: ovirt/vdsc:master
+          - image: {{ tag "vdsc" }}
             name: vdsc
             ports:
               - containerPort: 54321

@@ -93,14 +93,14 @@ items:
       spec:
         serviceAccountName: useroot
         containers:
-          - image: ovirt/engine-spice-proxy:master
+          - image: {{ tag "engine-spice-proxy" }}
             name: spice-proxy
             imagePullPolicy: "IfNotPresent"
             ports:
               - containerPort: 3128
                 protocol: TCP
 
-          - image: ovirt/engine-database:master
+          - image: {{ tag "engine-database" }}
             name: postgres
             imagePullPolicy: "IfNotPresent"
             ports:
@@ -119,7 +119,7 @@ items:
               - name: POSTGRESQL_MAX_CONNECTIONS
                 value: "150"
 
-          - image: ovirt/engine:master
+          - image: {{ tag "engine" }}
             name: ovirt-engine
             imagePullPolicy: "IfNotPresent"
             ports:

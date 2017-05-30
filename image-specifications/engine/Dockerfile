@@ -4,7 +4,7 @@
 # TODO: give ovirt user a well known gid and uid
 # TODO: fix redirect from http to https (port is missing)
 
-FROM ovirt/base:master
+FROM {{ tag "base" }}
 
 MAINTAINER Redhat Inc.
 

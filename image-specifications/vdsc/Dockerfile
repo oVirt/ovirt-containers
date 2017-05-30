@@ -1,4 +1,4 @@
-FROM ovirt/base:master
+FROM {{ tag "base" }}
 MAINTAINER "Yaniv Bronhaim" <ybronhei@redhat.com>
 
 ENV container docker
