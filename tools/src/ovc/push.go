@@ -21,7 +21,7 @@ package main
 import (
 	"fmt"
 
-	"ovirt/build"
+	"ovc/build"
 )
 
 func pushTool(project *build.Project) error {

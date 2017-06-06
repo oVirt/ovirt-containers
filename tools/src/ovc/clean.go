@@ -16,22 +16,30 @@ limitations under the License.
 
 package main
 
-// This tool saves the images to tar files.
+// This tool untas all the images created by the project, so that the
+// next build will create them again.
 
 import (
 	"fmt"
 
-	"ovirt/build"
+	"ovc/build"
 )
 
-func saveTool(project *build.Project) error {
-	for _, image := range project.Images().List() {
-		fmt.Printf("Saving image '%s'\n", image)
-		err := image.Save()
+func cleanTool(project *build.Project) error {
+	// The list of images is always returned in build order, with
+	// base images before the images that depend on them. In order
+	// to remove them without issues we need to reverse that order,
+	// so that base images are removed after the images that depend
+	// on them.
+	images := project.Images().List()
+	for i := len(images) - 1; i >= 0; i-- {
+		image := images[i]
+		fmt.Printf("Remove image '%s'\n", image)
+		err := image.Remove()
 		if err != nil {
 			return fmt.Errorf(
-				"Failed to save image '%s': %s",
-				image, err,
+				"Failed to remove image '%s'",
+				image,
 			)
 		}
 	}

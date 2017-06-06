@@ -16,20 +16,23 @@ limitations under the License.
 
 package main
 
-// This tool builds all the images.
+// This tool saves the images to tar files.
 
 import (
 	"fmt"
 
-	"ovirt/build"
+	"ovc/build"
 )
 
-func buildTool(project *build.Project) error {
+func saveTool(project *build.Project) error {
 	for _, image := range project.Images().List() {
-		fmt.Printf("Building image '%s'.\n", image)
-		err := image.Build()
+		fmt.Printf("Saving image '%s'\n", image)
+		err := image.Save()
 		if err != nil {
-			return fmt.Errorf("Failed to build image '%s'.\n", image)
+			return fmt.Errorf(
+				"Failed to save image '%s': %s",
+				image, err,
+			)
 		}
 	}
 

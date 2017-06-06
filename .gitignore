@@ -4,4 +4,4 @@
 /exported-artifacts/
 /tools/bin/
 /tools/pkg/
-/tools/src/gopkg.in/
+vendor/

@@ -25,36 +25,56 @@
 # probably the right place. Look at 'tools/src/ovirt/cmd/build/build.go'
 # instead, as that is the starting point for the main build process.
 
-.PHONY: all clean
+# The root of the Go source code:
+ROOT=$(PWD)/tools
 
-# Go path:
-GOPATH="$(PWD)/tools"
+# Locations of the Go and Glide binaries:
+GO_BINARY=go
+GLIDE_BINARY=$(ROOT)/bin/glide
 
-# Go dependencies:
-GODEPS=\
-	gopkg.in/ini.v1 \
-	$(NULL)
+# Location of the Glide project:
+GLIDE_PROJECT=$(shell find tools/src -name glide.yaml -print -quit)
 
-# Rule to build the from its source code:
-tools/bin/tool: $(shell find tools/src -type f)
-	for godep in $(GODEPS); do \
-		GOPATH="$(GOPATH)" go get $${godep}; \
-	done
-	GOPATH="$(GOPATH)" go build -o $@ tools/src/*.go
+# Location of the generated tool:
+TOOL_BINARY=$(ROOT)/bin/ovc
 
-build: tools/bin/tool
+# Install Glide if necessary:
+$(GLIDE_BINARY):
+	mkdir -p `dirname $(GLIDE_BINARY)`
+	GOPATH="$(ROOT)"; \
+	export GOPATH; \
+	PATH="$(ROOT)/bin:$${PATH}"; \
+	export PATH; \
+	curl https://glide.sh/get | sh
+
+# Rule to build the tool from its source code:
+$(TOOL_BINARY): $(GLIDE_BINARY) $(shell find tools/src -type f)
+	GOPATH="$(ROOT)"; \
+	export GOPATH; \
+	pushd $$(dirname $(GLIDE_PROJECT)); \
+		$(GLIDE_BINARY) install && \
+		$(GO_BINARY) build -o $@ *.go || \
+		exit 1; \
+	popd \
+
+.PHONY: build
+build: $(TOOL_BINARY)
 	$< $@ 2>&1 | tee $@.log
 
-save: tools/bin/tool
+.PHONY: save
+save: $(TOOL_BINARY)
 	$< $@ 2>&1 | tee $@.log
 
-push: tools/bin/tool
+.PHONY: push
+push: $(TOOL_BINARY)
 	$< $@ 2>&1 | tee $@.log
 
-deploy: tools/bin/tool
+.PHONY: deploy
+deploy: $(TOOL_BINARY)
 	$< $@ 2>&1 | tee $@.log
 
-clean: tools/bin/tool
+.PHONY: deploy
+clean: $(TOOL_BINARY)
 	$< $@ 2>&1 | tee $@.log
 	rm -rf tools/{bin,pkg}
 	docker images --filter dangling=true --quiet | xargs -r docker rmi --force

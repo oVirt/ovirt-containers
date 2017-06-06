@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"ovirt/build"
+	"ovc/build"
 )
 
 // The name of the project.

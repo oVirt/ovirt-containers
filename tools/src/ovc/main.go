@@ -23,11 +23,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"ovirt/build"
+	"ovc/build"
 )
 
+// ToolFunc is the type of functions that implement tools.
+//
 type ToolFunc func(project *build.Project) error
 
+// This index contains the mapping from names to tool functions.
+//
 var toolsIndex = map[string]ToolFunc{
 	"build":  buildTool,
 	"clean":  cleanTool,
