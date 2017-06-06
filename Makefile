@@ -57,6 +57,9 @@ $(TOOL_BINARY): $(GLIDE_BINARY) $(shell find tools/src -type f)
 		exit 1; \
 	popd \
 
+.PHONY: tool
+tool: $(TOOL_BINARY)
+
 .PHONY: build
 build: $(TOOL_BINARY)
 	$< $@ 2>&1 | tee $@.log
