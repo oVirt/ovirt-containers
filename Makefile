@@ -35,26 +35,26 @@ GODEPS=\
 	gopkg.in/ini.v1 \
 	$(NULL)
 
-# Rule to build a tool from its source code:
-tools/bin/%: $(shell find tools/src -type f)
+# Rule to build the from its source code:
+tools/bin/tool: $(shell find tools/src -type f)
 	for godep in $(GODEPS); do \
 		GOPATH="$(GOPATH)" go get $${godep}; \
 	done
-	GOPATH="$(GOPATH)" go install ovirt/cmd/$(notdir $@)
+	GOPATH="$(GOPATH)" go build -o $@ tools/src/*.go
 
-build: tools/bin/build
-	$< 2>&1 | tee $@.log
+build: tools/bin/tool
+	$< $@ 2>&1 | tee $@.log
 
-save: tools/bin/save
-	$< 2>&1 | tee $@.log
+save: tools/bin/tool
+	$< $@ 2>&1 | tee $@.log
 
-push: tools/bin/push
-	$< 2>&1 | tee $@.log
+push: tools/bin/tool
+	$< $@ 2>&1 | tee $@.log
 
-deploy: tools/bin/deploy
-	$< 2>&1 | tee $@.log
+deploy: tools/bin/tool
+	$< $@ 2>&1 | tee $@.log
 
-clean: tools/bin/clean
-	$< 2>&1 | tee $@.log
+clean: tools/bin/tool
+	$< $@ 2>&1 | tee $@.log
 	rm -rf tools/{bin,pkg}
 	docker images --filter dangling=true --quiet | xargs -r docker rmi --force

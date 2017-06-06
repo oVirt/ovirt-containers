@@ -16,31 +16,25 @@ limitations under the License.
 
 package main
 
-// This tool pushes the image to the docker registry.
+// This tool saves the images to tar files.
 
 import (
 	"fmt"
-	"os"
 
 	"ovirt/build"
 )
 
-func main() {
-	// Load the project:
-	project, err := build.LoadProject("")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err)
-		os.Exit(1)
-	}
-	defer project.Close()
-
-	// Push the images to the registry:
+func saveTool(project *build.Project) error {
 	for _, image := range project.Images().List() {
-		fmt.Printf("Pushing image '%s'\n", image)
-		err := image.Push()
+		fmt.Printf("Saving image '%s'\n", image)
+		err := image.Save()
 		if err != nil {
-			fmt.Printf("Failed to push image '%s'\n", image)
-			os.Exit(1)
+			return fmt.Errorf(
+				"Failed to save image '%s': %s",
+				image, err,
+			)
 		}
 	}
+
+	return nil
 }

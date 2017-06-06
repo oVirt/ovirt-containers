@@ -16,34 +16,22 @@ limitations under the License.
 
 package main
 
-// This tool loads and builds all the images.
+// This tool builds all the images.
 
 import (
 	"fmt"
-	"os"
 
 	"ovirt/build"
 )
 
-func main() {
-	// Load the project:
-	project, err := build.LoadProject("")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err);
-		os.Exit(1)
-	}
-	defer project.Close()
-
-	// Build the images:
+func buildTool(project *build.Project) error {
 	for _, image := range project.Images().List() {
 		fmt.Printf("Building image '%s'.\n", image)
 		err := image.Build()
 		if err != nil {
-			fmt.Fprintf(
-				os.Stderr, "Failed to build image '%s'.\n",
-				image,
-			)
-			os.Exit(1)
+			return fmt.Errorf("Failed to build image '%s'.\n", image)
 		}
 	}
+
+	return nil
 }

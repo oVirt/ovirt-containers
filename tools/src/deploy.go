@@ -43,39 +43,39 @@ const (
 	privilegedUser = "privilegeduser"
 )
 
-func main() {
-	// Load the project:
-	project, err := build.LoadProject("")
-	if err != nil {
-		fmt.Fprintf(
-			os.Stderr,
-			"Can't load project: %s\n",
-			err,
-		)
-	}
-	defer project.Close()
+func deployTool(project *build.Project) error {
+	var err error
 
 	// Check that the 'oc' tool is available and that it is the
 	// right version:
-	validateOc()
+	err = validateOc()
+	if err != nil {
+		return err
+	}
 
 	// Log in as system administrator:
-	runOc(
+	err = runOc(
 		"login",
 		"-u",
 		"system:admin",
 	)
+	if err != nil {
+		return err
+	}
 
 	// Create the project:
-	runOc(
+	err = runOc(
 		"new-project",
 		projectName,
 		"--description="+projectTitle,
 		"--display-name="+projectTitle,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Add administrator permissios to the 'developer' user account:
-	runOc(
+	err = runOc(
 		"adm",
 		"policy",
 		"add-role-to-user",
@@ -84,14 +84,20 @@ func main() {
 		"-n",
 		projectName,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Create a service account that can use the root user:
-	runOc(
+	err = runOc(
 		"create",
 		"serviceaccount",
 		useRoot,
 	)
-	runOc(
+	if err != nil {
+		return err
+	}
+	err = runOc(
 		"adm",
 		"policy",
 		"add-scc-to-user",
@@ -99,15 +105,21 @@ func main() {
 		"-z",
 		useRoot,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Create a service account that can has access to advanced host
 	// privileges, for use inside the VSDC pod:
-	runOc(
+	err = runOc(
 		"create",
 		"serviceaccount",
 		privilegedUser,
 	)
-	runOc(
+	if err != nil {
+		return err
+	}
+	err = runOc(
 		"adm",
 		"policy",
 		"add-scc-to-user",
@@ -115,32 +127,44 @@ func main() {
 		"-z",
 		privilegedUser,
 	)
+	if err != nil {
+		return err
+	}
 
 	// Create engine and VDSC deployments and add them to the
 	// project:
-	runOc(
+	err = runOc(
 		"create",
 		"-f",
 		project.Manifests().WorkingDirectory(),
 		"-R",
 	)
+	if err != nil {
+		return err
+	}
 
 	// Change the host name for the engine deployment, according to
 	// the host name that was assigned to the associated route, then
 	// unpause it:
-	engineHost := evalOc(
+	engineHost, err := evalOc(
 		"get",
 		"routes",
 		"ovirt-engine",
 		"--output=jsonpath={.spec.host}",
 	)
-	spiceProxyHost := evalOc(
+	if err != nil {
+		return err
+	}
+	spiceProxyHost, err := evalOc(
 		"get",
 		"routes",
 		"ovirt-spice-proxy",
 		"--output=jsonpath={.spec.host}",
 	)
-	runOc(
+	if err != nil {
+		return err
+	}
+	err = runOc(
 		"set",
 		"env",
 		"dc/ovirt-engine",
@@ -149,7 +173,10 @@ func main() {
 		"OVIRT_FQDN="+engineHost,
 		"SPICE_PROXY=http://"+spiceProxyHost+":3128",
 	)
-	runOc(
+	if err != nil {
+		return err
+	}
+	err = runOc(
 		"patch",
 		"dc/ovirt-engine",
 		"--patch",
@@ -159,6 +186,11 @@ func main() {
 			}
 		}`,
 	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Regular expression used to extract the version of the 'oc' tool from
@@ -187,15 +219,13 @@ const (
 // it is the right version. If the validation fails it prints an error
 // message and aborts the application.
 //
-func validateOc() {
+func validateOc() error {
 	// Get the value of the PATH environment variable:
 	path, present := os.LookupEnv("PATH")
 	if !present {
-		fmt.Fprintf(
-			os.Stderr,
-			"The PATH environment variable isn't set, can't locate the 'oc' tool'.\n",
+		return fmt.Errorf(
+			"The PATH environment variable isn't set, can't locate the 'oc' tool'",
 		)
-		os.Exit(1)
 	}
 
 	// Check that the 'oc' tools is available in one of the
@@ -214,68 +244,57 @@ func validateOc() {
 		}
 	}
 	if exec == "" {
-		fmt.Fprintf(
-			os.Stderr,
-			"Can't find the 'oc' tool in the path.\n",
+		return fmt.Errorf(
+			"Can't find the 'oc' tool in the path",
 		)
-		os.Exit(1)
 	}
 
 	// Run the tool to extract the version number, and check that it
 	// is what we expect:
 	out := build.EvalCommand("oc", "version")
 	if out == nil {
-		fmt.Fprintf(
-			os.Stderr,
-			"Failed to run 'oc version'.\n",
-		)
-		os.Exit(1)
+		return fmt.Errorf("Failed to run 'oc version'")
 	}
 	lines := strings.Split(string(out), "\n")
 	if len(lines) < 1 {
-		fmt.Fprint(
-			os.Stderr,
-			"Output of 'oc version' is empty.\n",
-		)
-		os.Exit(1)
+		return fmt.Errorf("Output of 'oc version' is empty")
 	}
 	line := lines[0]
 	groups := build.FindRegexpGroups(lines[0], ocVersionRe)
 	if len(groups) <= 1 {
-		fmt.Fprintf(
-			os.Stderr,
-			"The 'oc' version line '%s' doesn't match the expected regular expression.\n",
+		return fmt.Errorf(
+			"The 'oc' version line '%s' doesn't match the expected regular expression",
 			line,
 		)
-		os.Exit(1)
 	}
 	major, _ := strconv.Atoi(groups["major"])
 	minor, _ := strconv.Atoi(groups["minor"])
 	micro, _ := strconv.Atoi(groups["micro"])
 	if major < minOcMajor || (major == minOcMajor && minor < minOcMinor) {
-		fmt.Fprintf(
-			os.Stderr,
-			"Version %d.%d.%d of 'oc' isn't supported, should be at least %d.%d.\n",
+
+		return fmt.Errorf(
+			"Version %d.%d.%d of 'oc' isn't supported, should be at least %d.%d",
 			major, minor, micro,
 			minOcMajor, minOcMinor,
 		)
-		os.Exit(1)
 	}
+
+	return nil
 }
 
-func runOc(args ...string) {
+func runOc(args ...string) error {
 	err := build.RunCommand("oc", args...)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "The 'oc' command failed: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("The 'oc' command failed: %s", err)
 	}
+	return nil
 }
 
-func evalOc(args ...string) string {
-	result := build.EvalCommand("oc", args...)
-	if result == nil {
-		fmt.Fprintf(os.Stderr, "The 'oc' command failed\n")
-		os.Exit(1)
+func evalOc(args ...string) (result string, err error) {
+	bytes := build.EvalCommand("oc", args...)
+	if bytes == nil {
+		err = fmt.Errorf("The 'oc' command failed")
 	}
-	return string(result)
+	result = string(bytes)
+	return
 }

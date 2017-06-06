@@ -21,20 +21,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"ovirt/build"
 )
 
-func main() {
-	// Load the project:
-	project, err := build.LoadProject("")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err)
-		os.Exit(1)
-	}
-	defer project.Close()
-
+func cleanTool(project *build.Project) error {
 	// The list of images is always returned in build order, with
 	// base images before the images that depend on them. In order
 	// to remove them without issues we need to reverse that order,
@@ -46,12 +37,12 @@ func main() {
 		fmt.Printf("Remove image '%s'\n", image)
 		err := image.Remove()
 		if err != nil {
-			fmt.Fprintf(
-				os.Stderr,
-				"Failed to remove image '%s'\n",
+			return fmt.Errorf(
+				"Failed to remove image '%s'",
 				image,
 			)
-			os.Exit(1)
 		}
 	}
+
+	return nil
 }
