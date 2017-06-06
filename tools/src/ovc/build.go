@@ -22,14 +22,15 @@ import (
 	"fmt"
 
 	"ovc/build"
+	"ovc/log"
 )
 
 func buildTool(project *build.Project) error {
 	for _, image := range project.Images().List() {
-		fmt.Printf("Building image '%s'.\n", image)
+		log.Info("Building image '%s'", image)
 		err := image.Build()
 		if err != nil {
-			return fmt.Errorf("Failed to build image '%s'.\n", image)
+			return fmt.Errorf("Failed to build image '%s'", image)
 		}
 	}
 

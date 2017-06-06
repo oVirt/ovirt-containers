@@ -23,6 +23,8 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"ovc/log"
 )
 
 // Context contains the objects passed to templates when they are
@@ -67,11 +69,7 @@ func ProcessTemplate(project *Project, in string, out string) error {
 	})
 
 	// Parse the template:
-	fmt.Printf(
-		"Processing template '%s' and writing result to '%s'.\n",
-		in,
-		out,
-	)
+	log.Debug("Loading template from file '%s'", in)
 	_, err := tmpl.ParseFiles(in)
 	if err != nil {
 		return err
@@ -83,6 +81,7 @@ func ProcessTemplate(project *Project, in string, out string) error {
 	if err != nil {
 		return err
 	}
+	log.Debug("Creating template result file '%s'", out)
 	file, err := os.OpenFile(out, os.O_CREATE|os.O_WRONLY, info.Mode())
 	if err != nil {
 		return err

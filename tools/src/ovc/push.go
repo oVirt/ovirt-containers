@@ -22,17 +22,15 @@ import (
 	"fmt"
 
 	"ovc/build"
+	"ovc/log"
 )
 
 func pushTool(project *build.Project) error {
 	for _, image := range project.Images().List() {
-		fmt.Printf("Pushing image '%s'\n", image)
+		log.Info("Pushing image '%s'", image)
 		err := image.Push()
 		if err != nil {
-			return fmt.Errorf(
-				"Failed to push image '%s': %s",
-				image, err,
-			)
+			return fmt.Errorf("Failed to push image '%s': %s", image, err)
 		}
 	}
 

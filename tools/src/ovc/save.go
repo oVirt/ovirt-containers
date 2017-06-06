@@ -22,17 +22,15 @@ import (
 	"fmt"
 
 	"ovc/build"
+	"ovc/log"
 )
 
 func saveTool(project *build.Project) error {
 	for _, image := range project.Images().List() {
-		fmt.Printf("Saving image '%s'\n", image)
+		log.Info("Saving image '%s'", image)
 		err := image.Save()
 		if err != nil {
-			return fmt.Errorf(
-				"Failed to save image '%s': %s",
-				image, err,
-			)
+			return fmt.Errorf("Failed to save image '%s': %s", image, err)
 		}
 	}
 

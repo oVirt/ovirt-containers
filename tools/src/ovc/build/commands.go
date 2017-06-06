@@ -20,10 +20,10 @@ package build
 // evaluation of external commands.
 
 import (
-	"fmt"
-	"os"
 	"os/exec"
 	"strings"
+
+	"ovc/log"
 )
 
 // RunCommand executes the given command and waits till it finishes. The
@@ -31,10 +31,10 @@ import (
 // the standard output and standard error of the calling program.
 //
 func RunCommand(name string, args ...string) error {
-	fmt.Printf("Running command '%s' with arguments '%s'\n", name, strings.Join(args, " "))
+	log.Debug("Running command '%s' with arguments '%s'", name, strings.Join(args, " "))
 	command := exec.Command(name, args...)
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	command.Stdout = log.DebugWriter()
+	command.Stderr = log.ErrorWriter()
 	return command.Run()
 }
 
@@ -43,7 +43,7 @@ func RunCommand(name string, args ...string) error {
 // execution of the command fails it returns nil.
 //
 func EvalCommand(name string, args ...string) []byte {
-	fmt.Printf("Evaluating command '%s' with arguments '%s'\n", name, strings.Join(args, " "))
+	log.Debug("Evaluating command '%s' with arguments '%s'", name, strings.Join(args, " "))
 	bytes, err := exec.Command(name, args...).Output()
 	if err != nil {
 		return nil

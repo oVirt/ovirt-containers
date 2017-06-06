@@ -23,6 +23,7 @@ import (
 	"fmt"
 
 	"ovc/build"
+	"ovc/log"
 )
 
 func cleanTool(project *build.Project) error {
@@ -34,13 +35,10 @@ func cleanTool(project *build.Project) error {
 	images := project.Images().List()
 	for i := len(images) - 1; i >= 0; i-- {
 		image := images[i]
-		fmt.Printf("Remove image '%s'\n", image)
+		log.Info("Remove image '%s'", image)
 		err := image.Remove()
 		if err != nil {
-			return fmt.Errorf(
-				"Failed to remove image '%s'",
-				image,
-			)
+			return fmt.Errorf("Failed to remove image '%s'", image)
 		}
 	}
 

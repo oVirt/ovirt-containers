@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 
 	"ovc/build"
+	"ovc/log"
 )
 
 // ToolFunc is the type of functions that implement tools.
@@ -43,11 +44,7 @@ var toolsIndex = map[string]ToolFunc{
 func main() {
 	// Get the name of the tool:
 	if len(os.Args) < 2 {
-		fmt.Fprintf(
-			os.Stderr,
-			"Usage: %s TOOL [ARGS...]\n",
-			filepath.Base(os.Args[0]),
-		)
+		fmt.Fprintf(os.Stderr, "Usage: %s TOOL [ARGS...]\n", filepath.Base(os.Args[0]))
 		os.Exit(1)
 	}
 	toolName := os.Args[1]
@@ -55,31 +52,42 @@ func main() {
 	// Find the function that corresponds to the tool name:
 	toolFunc := toolsIndex[toolName]
 	if toolFunc == nil {
-		fmt.Fprintf(
-			os.Stderr,
-			"Can't find tool named '%s'.\n",
-			toolName,
-		)
+		fmt.Fprintf(os.Stderr, "Can't find tool named '%s'.\n", toolName)
 		os.Exit(1)
 	}
 
+	// Open the log:
+	log.Open(toolName)
+	log.Info("Log file is '%s'", log.Path())
+
 	// Load the project:
-	project, err := build.LoadProject("")
+	path, _ := filepath.Abs("project.conf")
+	log.Info("Loading project file '%s'", path)
+	project, err := build.LoadProject(path)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Can't load project: %s\n", err)
+		log.Error("%s", err)
 		os.Exit(1)
 	}
 
 	// Call the tool function, and close the project regardless of
 	// the result:
+	log.Debug("Running tool '%s'", toolName)
 	err = toolFunc(project)
+	project.Close()
 
-	// Check the result of the tool:
+	// Report the result:
+	var code int
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
+		log.Error("%s", err)
+		log.Error("Tool failed, check log file '%s' for details", log.Path())
+		code = 1
+	} else {
+		log.Info("Tool finished successfully")
+		code = 0
 	}
+	log.Debug("Exit code is %d", code)
 
-	// Bye:
-	os.Exit(0)
+	// Close the log and exit:
+	log.Close()
+	os.Exit(code)
 }

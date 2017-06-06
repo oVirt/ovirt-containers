@@ -62,22 +62,22 @@ tool: $(TOOL_BINARY)
 
 .PHONY: build
 build: $(TOOL_BINARY)
-	$< $@ 2>&1 | tee $@.log
+	$< $@
 
 .PHONY: save
 save: $(TOOL_BINARY)
-	$< $@ 2>&1 | tee $@.log
+	$< $@
 
 .PHONY: push
 push: $(TOOL_BINARY)
-	$< $@ 2>&1 | tee $@.log
+	$< $@
 
 .PHONY: deploy
 deploy: $(TOOL_BINARY)
-	$< $@ 2>&1 | tee $@.log
+	$< $@
 
 .PHONY: deploy
 clean: $(TOOL_BINARY)
-	$< $@ 2>&1 | tee $@.log
+	$< $@
 	rm -rf tools/{bin,pkg}
 	docker images --filter dangling=true --quiet | xargs -r docker rmi --force
