@@ -8,7 +8,6 @@ chmod 0660 /dev/kvm
 modprobe bonding
 modprobe 8021q
 modprobe ebtables
-modprobe etables_nat
 
 mkdir -p /var/log/vdsm
 mkdir -p /var/log/ovirt-imageio-daemon
@@ -16,14 +15,27 @@ chown vdsm:kvm /var/log/vdsm /var/log/ovirt-imageio-daemon
 
 vdsm-tool configure --force
 
+IFNAME="veth_name0"
+
 # setting link name - vdsm recognize veth_* prefix as veth type device
 ip link set eth0 down
-ip link set eth0 name veth_name0
-ip link set veth_name0 up
+ip link set eth0 name $IFNAME
+ip link set $IFNAME up
+
+# Configure routes
+IP_ADDRESS=$(ip addr show $IFNAME | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+IFS=. read ip_oct_1 ip_oct_2 ip_oct_3 ip_oct_4 <<< "$IP_ADDRESS"
+
+DEFAULT_ROUTE="$ip_oct_1.$ip_oct_2.$ip_oct_3.1"
+CLUSTER_ROUTE="10.128.0.0/14"
+MULTICAST_ROUTE="224.0.0.0/4"
+
+ip route add default via $DEFAULT_ROUTE dev $IFNAME
+ip route add $CLUSTER_ROUTE dev $IFNAME scope global
+ip route add $MULTICAST_ROUTE dev $IFNAME scope global
 
 sleep 5
 
-ip route add default via 172.17.0.1 dev veth_name0
 service vdsmd restart
 
 sleep 5
