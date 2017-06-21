@@ -22,6 +22,7 @@ package build
 import (
 	"container/list"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -32,6 +33,7 @@ import (
 // Project contains the project configuration.
 //
 type Project struct {
+	work      string
 	directory string
 	version   string
 	images    *ProjectImages
@@ -42,6 +44,7 @@ type Project struct {
 // of the project.
 //
 type ProjectImages struct {
+	work      string
 	directory string
 	prefix    string
 	registry  string
@@ -53,7 +56,14 @@ type ProjectImages struct {
 // are part of the project.
 //
 type ProjectManifests struct {
+	work      string
 	directory string
+}
+
+// WorkingDirectory returns the working directory of the project.
+//
+func (p *Project) WorkingDirectory() string {
+	return p.work
 }
 
 // Directory returns the root directory of the project.
@@ -80,6 +90,13 @@ func (p *Project) Images() *ProjectImages {
 //
 func (p *Project) Manifests() *ProjectManifests {
 	return p.manifests
+}
+
+// WorkingDirectory returns the working directory for the images of the
+// project.
+//
+func (pi *ProjectImages) WorkingDirectory() string {
+	return pi.work
 }
 
 // Directory returns the path of the directory containing the source
@@ -117,6 +134,13 @@ func (pi *ProjectImages) Index() map[string]*Image {
 	return pi.index
 }
 
+// WorkingDirectory returns the working directory for the OpenShift
+// manifests of the project.
+//
+func (pm *ProjectManifests) WorkingDirectory() string {
+	return pm.work
+}
+
 // Directory returns the path of the directory containing the source
 // files of the OpenShift manifests.
 //
@@ -124,11 +148,12 @@ func (pm *ProjectManifests) Directory() string {
 	return pm.directory
 }
 
-// Close releases all the resources used by the project. Once the
-// project is closed it can no longer be used.
+// Close releases all the resources used by the project, including the
+// temporary directory used to store the results of processsing
+// templates. Once the project is closed it can no longer be used.
 //
 func (p *Project) Close() error {
-	return nil
+	return os.RemoveAll(p.work)
 }
 
 // Default project file name.
@@ -161,6 +186,15 @@ func LoadProject(path string) (project *Project, err error) {
 
 	// Create an initially empty project:
 	project = new(Project)
+
+	// Create a temporary directory that will be used to store the
+	// results of generating files from templates, and maybe other
+	// temporary files.
+        project.work, err = ioutil.TempDir("", "work")
+        if err != nil {
+		err = fmt.Errorf("Can't create temporary work directory: %s\n", err)
+		return
+        }
 
 	// If the path is empty then use the current directory and the
 	// default project file name:
@@ -230,7 +264,19 @@ func loadImages(file *ini.File, project *Project) error {
 	images.prefix = section.Key("prefix").MustString("")
 	images.registry = section.Key("registry").MustString("")
 
-	// Load the basic information of the image, at least the name:
+	// Prepare the work directory:
+	images.work = filepath.Join(project.work, filepath.Base(images.directory))
+
+	// The source files of images may be templates, and those
+	// templates may refer to some properties of other images. In
+	// particular the Dockerfile of one image may refer to its
+	// parent using a template:
+	//
+	//	FROM {{ tag "base" }}
+	//
+	// In order to support that we need first to do a basic loading
+	// of the images, to have at least the name. After that we can
+	// load the image details, which will process the templates.
 	images.list = []*Image{}
 	paths, err := filepath.Glob(filepath.Join(images.directory, "*"))
 	if err != nil {
@@ -347,5 +393,9 @@ func loadManifests(file *ini.File, project *Project) error {
 	project.manifests = manifests
 	manifests.directory = section.Key("directory").MustString("")
 
-	return nil
+	// Prepare the work directory:
+	manifests.work = filepath.Join(project.work, filepath.Base(manifests.directory))
+
+	// Process the templates:
+	return ProcessTemplates(project, manifests.directory, manifests.work)
 }

@@ -121,7 +121,7 @@ func main() {
 	runOc(
 		"create",
 		"-f",
-		project.Manifests().Directory(),
+		project.Manifests().WorkingDirectory(),
 		"-R",
 	)
 

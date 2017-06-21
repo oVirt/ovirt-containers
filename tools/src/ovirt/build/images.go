@@ -31,6 +31,7 @@ import (
 //
 type Image struct {
 	project    *Project
+	work       string
 	directory  string
 	name       string
 	tag        string
@@ -71,9 +72,18 @@ func (i *Image) Load() error {
 	// Calculate the directory:
 	i.directory = filepath.Join(i.project.Images().Directory(), i.name)
 
+	// Process the templates, if needed:
+	if i.work == "" {
+		i.work = filepath.Join(i.project.Images().WorkingDirectory(), i.name)
+		err := ProcessTemplates(i.project, i.directory, i.work)
+		if err != nil {
+			return err
+		}
+	}
+
         // Check if there is a Dockerfile in the directory, and if it
         // does then load it:
-        dockerfilePath := filepath.Join(i.directory, "Dockerfile")
+        dockerfilePath := filepath.Join(i.work, "Dockerfile")
         if _, err := os.Stat(dockerfilePath); err == nil {
                 i.dockerfile = NewDockerfile()
                 i.dockerfile.Load(dockerfilePath)
@@ -128,7 +138,7 @@ func (i *Image) Build() error {
 		"docker",
 		"build",
 		fmt.Sprintf("--tag=%s", i.Tag()),
-		i.directory,
+		i.work,
 	)
 }
 
