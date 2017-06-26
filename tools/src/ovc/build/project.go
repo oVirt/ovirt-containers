@@ -34,7 +34,7 @@ import (
 //
 type Project struct {
 	work      string
-	directory string
+	root      string
 	version   string
 	images    *ProjectImages
 	manifests *ProjectManifests
@@ -44,32 +44,34 @@ type Project struct {
 // of the project.
 //
 type ProjectImages struct {
-	work      string
-	directory string
-	prefix    string
-	registry  string
-	list      []*Image
-	index     map[string]*Image
+	project  *Project
+	path     string
+	prefix   string
+	registry string
+	list     []*Image
+	index    map[string]*Image
 }
 
 // ProjectManifests contains the information about the manifests that
 // are part of the project.
 //
 type ProjectManifests struct {
-	work      string
-	directory string
+	project *Project
+	path    string
 }
 
-// WorkingDirectory returns the working directory of the project.
+// WorkingDirectory returns the absolute path of the working directory
+// of the project.
 //
 func (p *Project) WorkingDirectory() string {
 	return p.work
 }
 
-// Directory returns the root directory of the project.
+// Directory returns the the absolute path of the root directory of the
+// project.
 //
 func (p *Project) Directory() string {
-	return p.directory
+	return p.root
 }
 
 // Version returns the version of the project.
@@ -92,18 +94,18 @@ func (p *Project) Manifests() *ProjectManifests {
 	return p.manifests
 }
 
-// WorkingDirectory returns the working directory for the images of the
-// project.
+// WorkingDirectory returns the absolute path of the working directory for the
+// images of the project.
 //
 func (pi *ProjectImages) WorkingDirectory() string {
-	return pi.work
+	return filepath.Join(pi.project.work, pi.path)
 }
 
-// Directory returns the path of the directory containing the source
+// Directory returns the absolute path of the directory containing the source
 // files of the image specifications.
 //
 func (pi *ProjectImages) Directory() string {
-	return pi.directory
+	return filepath.Join(pi.project.root, pi.path)
 }
 
 // Prefix returns the prefix that should be used to tag the images of
@@ -134,18 +136,18 @@ func (pi *ProjectImages) Index() map[string]*Image {
 	return pi.index
 }
 
-// WorkingDirectory returns the working directory for the OpenShift
-// manifests of the project.
+// WorkingDirectory returns the absolute path of the working directory for the
+// OpenShift manifests of the project.
 //
 func (pm *ProjectManifests) WorkingDirectory() string {
-	return pm.work
+	return filepath.Join(pm.project.work, pm.path)
 }
 
-// Directory returns the path of the directory containing the source
-// files of the OpenShift manifests.
+// Directory returns the absolute path of the directory containing the
+// source files of the OpenShift manifests.
 //
 func (pm *ProjectManifests) Directory() string {
-	return pm.directory
+	return filepath.Join(pm.project.root, pm.path)
 }
 
 // Close releases all the resources used by the project, including the
@@ -186,6 +188,10 @@ func LoadProject(path string) (project *Project, err error) {
 
 	// Create an initially empty project:
 	project = new(Project)
+
+	// Calculate the absolute path of the project:
+	root, _ := filepath.Abs(filepath.Dir(path))
+	project.root = root
 
 	// Create a temporary directory that will be used to store the
 	// results of generating files from templates, and maybe other
@@ -260,12 +266,10 @@ func loadImages(file *ini.File, project *Project) error {
 	// Load basic attributes:
 	images := new(ProjectImages)
 	project.images = images
-	images.directory = section.Key("directory").MustString("")
+	images.project = project
+	images.path = section.Key("directory").MustString("")
 	images.prefix = section.Key("prefix").MustString("")
 	images.registry = section.Key("registry").MustString("")
-
-	// Prepare the work directory:
-	images.work = filepath.Join(project.work, filepath.Base(images.directory))
 
 	// The source files of images may be templates, and those
 	// templates may refer to some properties of other images. In
@@ -278,7 +282,7 @@ func loadImages(file *ini.File, project *Project) error {
 	// of the images, to have at least the name. After that we can
 	// load the image details, which will process the templates.
 	images.list = []*Image{}
-	paths, err := filepath.Glob(filepath.Join(images.directory, "*"))
+	paths, err := filepath.Glob(filepath.Join(project.root, images.path, "*"))
 	if err != nil {
 		return err
 	}
@@ -340,7 +344,7 @@ func loadImages(file *ini.File, project *Project) error {
 func loadImage(image *Image) error {
 	// Check if there is a Dockerfile in the directory, and if it
 	// does then load it:
-	path := filepath.Join(image.directory, "Dockerfile")
+	path := filepath.Join(image.Directory(), "Dockerfile")
 	if _, err := os.Stat(path); err == nil {
 		image.dockerfile = NewDockerfile()
 		image.dockerfile.Load(path)
@@ -391,11 +395,13 @@ func loadManifests(file *ini.File, project *Project) error {
 	// Create the manifests object, and get the directory:
 	manifests := new(ProjectManifests)
 	project.manifests = manifests
-	manifests.directory = section.Key("directory").MustString("")
-
-	// Prepare the work directory:
-	manifests.work = filepath.Join(project.work, filepath.Base(manifests.directory))
+	manifests.project = project
+	manifests.path = section.Key("directory").MustString("")
 
 	// Process the templates:
-	return ProcessTemplates(project, manifests.directory, manifests.work)
+	return ProcessTemplates(
+		project,
+		manifests.Directory(),
+		manifests.WorkingDirectory(),
+	)
 }

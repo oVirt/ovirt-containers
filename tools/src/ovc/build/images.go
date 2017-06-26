@@ -31,8 +31,6 @@ import (
 //
 type Image struct {
 	project    *Project
-	work       string
-	directory  string
 	name       string
 	tag        string
 	dockerfile *Dockerfile
@@ -53,6 +51,12 @@ func NewImage(project *Project, name string) *Image {
 // the Dockerfile, if it exists.
 //
 func (i *Image) Load() error {
+	// If the tag already has a value then the image has been loaded
+	// before, so we don't need to do anything:
+	if i.tag != "" {
+		return nil
+	}
+
 	// Calculate the tag:
 	i.tag = fmt.Sprintf(
 		"%s/%s:%s",
@@ -69,21 +73,17 @@ func (i *Image) Load() error {
 		)
 	}
 
-	// Calculate the directory:
-	i.directory = filepath.Join(i.project.Images().Directory(), i.name)
-
-	// Process the templates, if needed:
-	if i.work == "" {
-		i.work = filepath.Join(i.project.Images().WorkingDirectory(), i.name)
-		err := ProcessTemplates(i.project, i.directory, i.work)
-		if err != nil {
-			return err
-		}
+	// Process the templates:
+	source := i.Directory()
+	work := i.WorkingDirectory()
+	err := ProcessTemplates(i.project, source, work)
+	if err != nil {
+		return err
 	}
 
-        // Check if there is a Dockerfile in the directory, and if it
-        // does then load it:
-        dockerfilePath := filepath.Join(i.work, "Dockerfile")
+	// Check if there is a Dockerfile in the working directory, and
+	// if it does then load it:
+        dockerfilePath := filepath.Join(work, "Dockerfile")
         if _, err := os.Stat(dockerfilePath); err == nil {
                 i.dockerfile = NewDockerfile()
                 i.dockerfile.Load(dockerfilePath)
@@ -92,12 +92,18 @@ func (i *Image) Load() error {
         return nil
 }
 
-
-// Directory returns the path of the directory that contains the source
-// files of the image.
+// Directory returns the absolute path of the directory that contains the
+// source files of the image.
 //
 func (i *Image) Directory() string {
-	return i.directory
+	return filepath.Join(i.project.Images().Directory(), i.name)
+}
+
+// WorkingDirectory returns the absolute path of the work directory for the
+// image.
+//
+func (i *Image) WorkingDirectory() string {
+	return filepath.Join(i.project.Images().WorkingDirectory(), i.name)
 }
 
 // Name returns the name of the image.
@@ -138,7 +144,7 @@ func (i *Image) Build() error {
 		"docker",
 		"build",
 		fmt.Sprintf("--tag=%s", i.Tag()),
-		i.work,
+		i.WorkingDirectory(),
 	)
 }
 
