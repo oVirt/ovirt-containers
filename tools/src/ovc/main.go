@@ -33,7 +33,7 @@ type ToolFunc func(project *build.Project) error
 
 // This index contains the mapping from names to tool functions.
 //
-var toolsIndex = map[string]ToolFunc{
+var tools = map[string]ToolFunc{
 	"build":  buildTool,
 	"clean":  cleanTool,
 	"deploy": deployTool,
@@ -47,18 +47,25 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage: %s TOOL [ARGS...]\n", filepath.Base(os.Args[0]))
 		os.Exit(1)
 	}
-	toolName := os.Args[1]
+	name := os.Args[1]
 
 	// Find the function that corresponds to the tool name:
-	toolFunc := toolsIndex[toolName]
-	if toolFunc == nil {
-		fmt.Fprintf(os.Stderr, "Can't find tool named '%s'.\n", toolName)
+	tool := tools[name]
+	if tool == nil {
+		fmt.Fprintf(os.Stderr, "Can't find tool named '%s'.\n", name)
 		os.Exit(1)
 	}
 
+	// Run the tool inside a different function, so that we can take
+	// advantage of the 'defer' mechanism:
+	os.Exit(run(name, tool))
+}
+
+func run(name string, tool ToolFunc) int {
 	// Open the log:
-	log.Open(toolName)
+	log.Open(name)
 	log.Info("Log file is '%s'", log.Path())
+	defer log.Close()
 
 	// Load the project:
 	path, _ := filepath.Abs("project.conf")
@@ -66,28 +73,19 @@ func main() {
 	project, err := build.LoadProject(path)
 	if err != nil {
 		log.Error("%s", err)
-		os.Exit(1)
+		return 1
 	}
+	defer project.Close()
 
-	// Call the tool function, and close the project regardless of
-	// the result:
-	log.Debug("Running tool '%s'", toolName)
-	err = toolFunc(project)
-	project.Close()
-
-	// Report the result:
-	var code int
+	// Call the tool function:
+	log.Debug("Running tool '%s'", name)
+	err = tool(project)
 	if err != nil {
 		log.Error("%s", err)
 		log.Error("Tool failed, check log file '%s' for details", log.Path())
-		code = 1
+		return 1
 	} else {
 		log.Info("Tool finished successfully")
-		code = 0
+		return 0
 	}
-	log.Debug("Exit code is %d", code)
-
-	// Close the log and exit:
-	log.Close()
-	os.Exit(code)
 }
