@@ -4,4 +4,5 @@
 /exported-artifacts/
 /tools/bin/
 /tools/pkg/
+/tools/src/ovc/embedded.go
 vendor/
