@@ -25,6 +25,11 @@
 # probably the right place. Look at 'tools/src/ovirt/cmd/build/build.go'
 # instead, as that is the starting point for the main build process.
 
+# In order to use things like 'pushd' we need to explicitly set 'bash' as the
+# shell, as in some enviroments (Travis CI, for example) the default shell is
+# plain 'sh':
+SHELL=/bin/bash
+
 # The root of the Go source code:
 ROOT=$(PWD)/tools
 
