@@ -21,10 +21,15 @@ trap clean_up EXIT SIGHUP SIGINT SIGTERM
 # Build the images:
 make build
 
-# Save the images to tar files, and move them to the exported artifacts
-# directory:
+# Save the images to tar files:
 make save
-mv *.tar.gz exported-artifacts
+
+# Move the generated artifacts and log files to the artifacts directory:
+mv \
+    tools/bin/ovc \
+    *.log \
+    *.tar.gz \
+    exported-artifacts
 
 # Pushing the images to the registry is currently disabled because
 # Jenkins doesn't have yet the required credentials.
