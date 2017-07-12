@@ -47,12 +47,23 @@ $(GLIDE_BINARY):
 	export PATH; \
 	curl https://glide.sh/get | sh
 
+# The sources of the tool are the .go files, but also the image
+# specifications and the OpenShift manifests, as they are embedded
+# within the binary:
+TOOL_SOURCES=\
+	project.conf \
+	$(shell find tools/src -type f -name '*.go') \
+	$(shell find image-specifications -type f) \
+	$(shell find os-manifests -type f) \
+	$(NULL)
+
 # Rule to build the tool from its source code:
-$(TOOL_BINARY): $(GLIDE_BINARY) $(shell find tools/src -type f)
+$(TOOL_BINARY): $(GLIDE_BINARY) $(TOOL_SOURCES)
 	GOPATH="$(ROOT)"; \
 	export GOPATH; \
 	pushd $$(dirname $(GLIDE_PROJECT)); \
 		$(GLIDE_BINARY) install && \
+		$(GO_BINARY) generate && \
 		$(GO_BINARY) build -o $@ *.go || \
 		exit 1; \
 	popd \
