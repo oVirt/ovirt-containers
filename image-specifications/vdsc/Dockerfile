@@ -29,7 +29,7 @@ RUN yum install -y tuned kexec-tools iptables-services; yum clean all
 RUN mkdir -p /etc/iscsi;
 # ovirt-container-node
 
-RUN yum install -y https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-9.noarch.rpm
+RUN yum install -y epel-release
 RUN yum install -y vdsm vdsm-cli vdsm-hook-faqemu; yum clean all;
 RUN yum install -y dhclient rsyslog iproute grub2-tools openssh-server; yum clean all;
 
