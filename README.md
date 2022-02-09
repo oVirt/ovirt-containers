@@ -1,4 +1,12 @@
 # oVirt-Containers - master snapshot
+
+
+> IMPORTANT: This project has been dropped from oVirt
+>
+> Keeping the repo only for reference.
+
+
+
 The repository includes image-specifications (for docker currently) and yaml
 manifests for openshift to run oVirt deployment (oVirt-Engine and oVirt-Node).
 
